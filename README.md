@@ -11,6 +11,14 @@ Desafio para entrar na Digaí: Criar uma interface com a pergunta, gravação e 
 
 ## To Do
 
+* Infra:
+  * [x] Github Pages deployment pipeline
+    * [ ] Fix server static assets
+  * [ ] Add extra pipeline to insert version (commit hash and date) into build
+    * [ ] Show version in webpage (footer ?)
+  * [ ] Installation, definitions and more info in README
+  * [ ] web metadata
+  * [ ] app optimization
 * Prototype:
   * [x] Plan the overview
   * [ ] Layout
