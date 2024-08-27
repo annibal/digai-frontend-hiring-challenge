@@ -7,7 +7,7 @@ export interface IAppRoot {
 }
 
 function AppRoot() {
-  console.log(1)
+
   return (
     <RouterProvider router={rootRouter} />
   )
