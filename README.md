@@ -41,6 +41,8 @@ Desafio para entrar na Digaí: Criar uma interface com a pergunta, gravação e 
     * [ ] Profile ?
   * [ ] Vestibulum (Pre-interview) page
     * [ ] info & preparation
+    * [ ] Test audio
+     * [ ] Select input device, Select output device, update etc
     * [ ] Start Interview button
   * [ ] Interview page
     * [ ] Interview-wide timer
