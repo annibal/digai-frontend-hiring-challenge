@@ -30,7 +30,7 @@ Desafio para entrar na Digaí: Criar uma interface com a pergunta, gravação e 
   * [ ] Home page
 * Setup:
   * [x] Working simple app
-  * [ ] Tailwind
+  * [x] Tailwind
   * [ ] styled-components
   * [x] react router
   * [ ] Layout components

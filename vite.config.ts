@@ -1,6 +1,6 @@
+import { fileURLToPath, URL } from "url";
 import { defineConfig, UserConfig } from "vite";
 import react from "@vitejs/plugin-react";
-import chalk from "chalk";
 
 // https://vitejs.dev/config/
 export default defineConfig((configEnv) => {
@@ -18,6 +18,12 @@ export default defineConfig((configEnv) => {
 
   const r: UserConfig = {
     plugins: [react()],
+    base: "/",
+    resolve: {
+      alias: {
+        "@": fileURLToPath(new URL("./src", import.meta.url)),
+      },
+    },
   };
 
   return r;

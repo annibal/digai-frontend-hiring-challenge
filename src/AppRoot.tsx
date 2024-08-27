@@ -1,5 +1,5 @@
 import { RouterProvider, RouterProviderProps } from 'react-router-dom'
-import { rootRouter } from './routes'
+import { rootRouter } from '@/routes'
 
 
 export interface IAppRoot {
