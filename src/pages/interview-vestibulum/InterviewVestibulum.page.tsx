@@ -1,12 +1,9 @@
 import { Link, useParams } from "react-router-dom";
 import {
-  PiCaretDownFill,
   PiMicrophoneFill,
   PiSpeakerHighFill,
   PiPlayFill,
-  PiPauseFill,
   PiEarSlash,
-  PiEarFill,
 } from "react-icons/pi";
 
 export default function InterviewVestibulumPage() {

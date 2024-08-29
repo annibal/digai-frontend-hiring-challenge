@@ -2,11 +2,12 @@ import lz from "./utils/lazy-route-wrapper";
 import GenericErrorPage from "./pages/error-pages/GenericError.page";
 import RootLayout from "./components/layouts/RootLayout";
 import { createBrowserRouter, RouteObject } from "react-router-dom";
+import NavHeader from "./components/nav-header/NavHeader";
 
 const routes = [
   {
     path: "",
-    element: <RootLayout />,
+    element: <RootLayout header={<NavHeader />} />,
     errorElement: <GenericErrorPage />,
     children: [
       {

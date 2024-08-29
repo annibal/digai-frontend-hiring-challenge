@@ -4,12 +4,7 @@ import viteLogo from "/vite.svg";
 import { v4 as uuidv4 } from "uuid";
 import { Link } from "react-router-dom";
 
-// export interface IHomePage {
-//   prop?: string | null;
-// }
-
-// function HomePage({ prop }: IHomePage) {
-function HomePage() {
+export default function HomePage() {
   const [count, setCount] = useState(0);
 
   return (
@@ -28,19 +23,19 @@ function HomePage() {
           <div className="flex justify-center">
             <Link
               to={`/interview-setup/${uuidv4()}`}
-              className="inline-flex text-gray-700 bg-gray-200 border-0 py-2 px-6 focus:outline-none hover:bg-gray-300 rounded text-lg"
+              className="inline-flex text-white bg-indigo-500 border-0 py-2 px-6 focus:outline-none hover:bg-indigo-600 rounded text-lg"
             >
               Página: Preparação
             </Link>
             <Link
               to={`/interview/${uuidv4()}`}
-              className="ml-4 inline-flex text-white bg-indigo-500 border-0 py-2 px-6 focus:outline-none hover:bg-indigo-600 rounded text-lg"
+              className="ml-4 inline-flex bg-gray-200 border-0 py-2 px-6 focus:outline-none hover:bg-gray-300 rounded text-lg"
             >
               Página: Entrevista
             </Link>
             <Link
               to={`/interview-after/${uuidv4()}`}
-              className="ml-4 inline-flex text-white bg-green-600 border-0 py-2 px-6 focus:outline-none hover:bg-green-700 rounded text-lg"
+              className="ml-4 inline-flex bg-gray-200 border-0 py-2 px-6 focus:outline-none hover:bg-gray-300 rounded text-lg"
             >
               Página: Resultado
             </Link>
@@ -59,10 +54,10 @@ function HomePage() {
       <section className="pb-24 flex md:flex-row flex-col items-center">
         <div className="lg:flex-grow md:w-1/2 lg:pr-24 md:pr-16 flex flex-col md:items-start md:text-left mb-16 md:mb-0 items-center text-center">
           <div className="flex items-center gap-4">
-            <a href="https://vitejs.dev" target="_blank">
+            <a href="https://vitejs.dev" target="vite">
               <img src={viteLogo} className="logo" alt="Vite logo" />
             </a>
-            <a href="https://react.dev" target="_blank">
+            <a href="https://react.dev" target="react">
               <img src={reactLogo} className="logo react" alt="React logo" />
             </a>
             <h1 className="text-3xl font-bold leading-none">Vite + React</h1>
@@ -88,5 +83,3 @@ function HomePage() {
     </>
   );
 }
-
-export default HomePage;
