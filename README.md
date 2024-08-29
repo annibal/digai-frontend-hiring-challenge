@@ -13,7 +13,7 @@ Desafio para entrar na Digaí: Criar uma interface com a pergunta, gravação e 
 
 * Infra:
   * [x] Github Pages deployment pipeline
-    * [ ] Fix server static assets
+    * [x] Fix server static assets
   * [ ] Add extra pipeline to insert version (commit hash and date) into build
     * [ ] Show version in webpage (footer ?)
   * [ ] Installation, definitions and more info in README
@@ -21,13 +21,13 @@ Desafio para entrar na Digaí: Criar uma interface com a pergunta, gravação e 
   * [ ] app optimization
 * Prototype:
   * [x] Plan the overview
-  * [ ] Layout
-  * [ ] Vestibulum
-  * [ ] Interview
+  * [x] Layout
+  * [x] Vestibulum
+  * [x] Interview
     * [ ] Audio Recorder
     * [ ] Audio Player
-  * [ ] Submission
-  * [ ] Home page
+  * [x] Submission
+  * [X] Home page
 * Setup:
   * [x] Working simple app
   * [x] Tailwind
@@ -45,15 +45,16 @@ Desafio para entrar na Digaí: Criar uma interface com a pergunta, gravação e 
      * [ ] Select input device, Select output device, update etc
     * [ ] Start Interview button
   * [ ] Interview page
-    * [ ] Interview-wide timer
     * [ ] Display the question
     * [ ] Start Recording answer component - Record / Pause / Continue / Stop (Finish)
     * [ ] Audio component - Play / Pause / Set
     * [ ] option to delete recording, to then record a new one
     * [ ] submit
     * [ ] auto-submit from timer
+  * [ ] Interview: all questions page
+    * [ ] info, show audio, record again. submit
   * [ ] Submission page
-    * [ ] info, show audio, etc
+    * [ ] info, show audio
 
 ---
 ---

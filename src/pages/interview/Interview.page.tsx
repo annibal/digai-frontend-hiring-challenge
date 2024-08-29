@@ -1,6 +1,6 @@
 import { Link, useParams } from "react-router-dom";
 import {
-  PiSkipBackFill,
+  PiTrashFill,
   PiRecordFill,
   PiPlayFill,
   PiPauseFill,
@@ -62,7 +62,7 @@ export default function InterviewPage() {
                 </p>
                 <button className="py-6 w-full cursor-pointer focus:outline-none flex justify-center items-center rounded-b-lg border-b-2 border-x-2 border-gray-300 text-gray-600 bg-white hover:bg-gray-50 hover:text-gray-700">
                   <span className="text-xl md:text-3xl">
-                    <PiSkipBackFill />
+                    <PiTrashFill />
                   </span>
                 </button>
               </div>
