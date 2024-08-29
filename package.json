@@ -4,6 +4,7 @@
   "version": "0.0.0",
   "type": "module",
   "author": "Arthur Annibal",
+  "homepage": "https://annibal.github.io/digai-frontend-hiring-challenge/",
   "scripts": {
     "dev": "vite --logLevel info --host --mode development --port 42690 --strictPort --base '/' --config ./vite.config.ts",
     "build": "tsc --build --verbose && vite build",

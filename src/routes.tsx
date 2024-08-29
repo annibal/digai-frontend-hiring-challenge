@@ -15,7 +15,9 @@ const routes = [
       },
       {
         path: "interview-setup/:interviewId",
-        lazy: lz(() => import("./pages/interview-vestibulum/InterviewVestibulum.page")),
+        lazy: lz(
+          () => import("./pages/interview-vestibulum/InterviewVestibulum.page")
+        ),
       },
       {
         path: "interview/:interviewId",
@@ -31,4 +33,8 @@ const routes = [
 
 export default routes;
 
-export const rootRouter = createBrowserRouter(routes as unknown as RouteObject[])
+export const rootRouter = createBrowserRouter(
+  routes as unknown as RouteObject[],
+  { basename: import.meta.env.BASE_URL }
+  // { basename: "/digai-frontend-hiring-challenge/" }
+);
