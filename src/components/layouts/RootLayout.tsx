@@ -1,14 +1,10 @@
-import { PropsWithChildren } from "react";
+import { v4 as uuidv4 } from "uuid";
 import { Link, Outlet } from "react-router-dom";
-
-// export interface IRootLayout extends PropsWithChildren {
-//   title?: string | null;
-// }{ children }: IRootLayout
 
 function RootLayout() {
   return (
     <>
-      <header className="text-gray-700 body-font border-b border-gray-200">
+      <header className="text-gray-700 body-font border-b border-gray-200 bg-white">
         <div className="container mx-auto flex flex-wrap p-5 flex-col md:flex-row items-center">
           <Link
             to="/"
@@ -28,29 +24,32 @@ function RootLayout() {
             </svg>
             <span className="ml-3 text-xl">DIGAI:ANNIBAL</span>
           </Link>
-          <nav className="md:ml-auto flex flex-wrap items-center text-base justify-center">
-            <a className="mr-5 hover:text-gray-900">First Link</a>
-            <a className="mr-5 hover:text-gray-900">Second Link</a>
-            <a className="mr-5 hover:text-gray-900">Third Link</a>
-            <a className="mr-5 hover:text-gray-900">Fourth Link</a>
-          </nav>
-          <button className="inline-flex items-center bg-gray-200 border-0 py-1 px-3 focus:outline-none hover:bg-gray-300 rounded text-base mt-4 md:mt-0">
-            Button
-            <svg
-              fill="none"
-              stroke="currentColor"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              stroke-width="2"
-              className="w-4 h-4 ml-1"
-              viewBox="0 0 24 24"
+
+          <nav className="md:ml-auto gap-8 flex flex-wrap items-center text-base justify-center">
+            <Link
+              to={`/interview-setup/${uuidv4()}`}
+              className="hover:text-gray-900"
             >
-              <path d="M5 12h14M12 5l7 7-7 7"></path>
-            </svg>
-          </button>
+              Preparação
+            </Link>
+            <Link
+              to={`/interview/${uuidv4()}`}
+              className="hover:text-gray-900"
+            >
+              Entrevista
+            </Link>
+            <Link
+              to={`/interview-after/${uuidv4()}`}
+              className="hover:text-gray-900"
+            >
+              Respostas
+            </Link>
+          </nav>
         </div>
       </header>
-      <Outlet />
+      <main className="text-gray-700 body-font container mx-auto px-2 sm:px-5 py-24">
+        <Outlet />
+      </main>
     </>
   );
 }

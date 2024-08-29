@@ -6,7 +6,7 @@
   "author": "Arthur Annibal",
   "scripts": {
     "dev": "vite --logLevel info --host --mode development --port 42690 --strictPort --base '/' --config ./vite.config.ts",
-    "build": "tsc --build --verbose",
+    "build": "tsc --build --verbose && vite build",
     "lint": "eslint .",
     "preview": "vite preview"
   },

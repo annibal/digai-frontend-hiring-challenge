@@ -7,12 +7,17 @@ import tseslint from "typescript-eslint";
 
 export default tseslint.config(
   { ignores: ["dist"] },
+  
   {
     extends: [js.configs.recommended, ...tseslint.configs.recommended],
     files: ["**/*.{ts,tsx}"],
     languageOptions: {
       ecmaVersion: 2020,
-      globals: globals.browser,
+      globals: {
+        ...globals.browser,
+        JSX: true,
+        require: true,
+      },
       parserOptions: {
         ecmaVersion: "latest",
         ecmaFeatures: { jsx: true },
@@ -21,6 +26,7 @@ export default tseslint.config(
     },
     settings: { react: { version: "18.3" } },
     plugins: {
+      "react": react,
       "react-hooks": reactHooks,
       "react-refresh": reactRefresh,
     },
@@ -31,11 +37,13 @@ export default tseslint.config(
       ...reactHooks.configs.recommended.rules,
 
       'react/jsx-no-target-blank': 'warn',
+      'react/no-unknown-property': 'warn',
       "react-refresh/only-export-components": [
         "warn",
         { allowConstantExport: true },
       ],
-
+      
+      '@typescript-eslint/no-require-imports': 'off',
       "@typescript-eslint/no-explicit-any": ["warn", { ignoreRestArgs: true }],
       "@typescript-eslint/no-empty-object-type": [
         "warn",
