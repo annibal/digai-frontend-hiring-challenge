@@ -28,7 +28,6 @@ export default function isErrorOf(
 
     const errorProtoName = Object.prototype.toString
       .call(error)
-      .includes(comparee as string)
       .split(" ")[1]
       .replace("]", "");
     

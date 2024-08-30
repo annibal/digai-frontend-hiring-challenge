@@ -19,6 +19,7 @@ export default tseslint.config(
         require: true,
         PermissionName: true,
         PermissionState: true,
+        MediaStreamConstraints: true,
       },
       parserOptions: {
         ecmaVersion: "latest",

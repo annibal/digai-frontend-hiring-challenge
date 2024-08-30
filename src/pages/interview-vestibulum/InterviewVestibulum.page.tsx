@@ -5,9 +5,18 @@ import {
   PiPlayFill,
   PiEarSlash,
 } from "react-icons/pi";
+import useNavigatorPermissions from "@/components/navigator-permissions/useNavigatorPermissions";
+import useMediaDevices from "@/components/media-devices/useMediaDevices";
+import useMediaStream from "@/components/media-devices/useMediaStream";
 
 export default function InterviewVestibulumPage() {
   const { interviewId } = useParams();
+  const permMicrophone = useNavigatorPermissions("microphone");
+  const permAudioCapture = useNavigatorPermissions("audio-capture");
+  const permSpeakerSelection = useNavigatorPermissions("speaker-selection");
+
+  const { mediaDevices } = useMediaDevices([permMicrophone.isPermitted])
+  const mediaStreamData = useMediaStream({ disableImmediateCall: true});
 
   return (
     <>
@@ -110,6 +119,64 @@ export default function InterviewVestibulumPage() {
                 <p className="">Escutar o dispositivo</p>
               </div>
             </div>
+          </div>
+
+          <div className="mt-8">
+            <p className="text-blue-600 font-medium">
+              Permissões:
+            </p>
+
+            {!permMicrophone.isPermitted && (
+              <>
+                {permMicrophone.canBePermitted ? (
+                  <div className="py-4 px-6 border border-blue-500 bg-blue-100 rounded-lg my-2">
+                    <p className="leading-tight">Por razões de segurança, seu navegador não concedeu o acesso ao microfone para esta página.</p>
+                    <button
+                      className="mr-4 inline-flex text-white bg-blue-600 border-0 py-2 px-6 focus:outline-none hover:bg-blue-700 rounded text-sm mt-6"
+                      onClick={() => mediaStreamData.manualUpdate()}
+                    >
+                      Conceder Acesso
+                    </button>
+                  </div>
+                ) : (
+                  <div className="py-4 px-6 border border-red-500 bg-red-50 rounded-lg my-2">
+                    <p className="">Microfone Indisponível</p>
+                    <p className="text-sm">Parece que você não tem acesso ao microfone :C</p>
+                    <p className="text-sm">Verifique as configurações do seu dispositivo e do seu navegador - para prosseguir é necessário o acesso ao microfone.</p>
+                  </div>
+                )}
+              </>
+            )}
+
+            <ul>
+              <li>
+                <span className="font-bold">● {permMicrophone.name}</span>: {permMicrophone.state}
+              </li>
+              <li>
+                <span className="font-bold">● {permAudioCapture.name}</span>: {permAudioCapture.state}
+              </li>
+              <li>
+                <span className="font-bold">● {permSpeakerSelection.name}</span>: {permSpeakerSelection.state}
+              </li>
+            </ul>
+          </div>
+
+          <div className="mt-8">
+            <p className="text-blue-600 font-medium">
+              Dispositivos:
+            </p>
+
+            <ul>
+              {mediaDevices.map((mediaDevice) => (
+                <li key={mediaDevice.id}>
+                  <p>
+                    ● <span className="text-gray-400 font-small">{mediaDevice.kindText}</span>{' '}
+                    <span className="text-indigo-400 font-small">[ G:{mediaDevice.groupNumber} ]</span>{' '}
+                    {mediaDevice.label}
+                  </p>
+                </li>
+              ))}
+            </ul>
           </div>
 
           <div className="mt-8">

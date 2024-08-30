@@ -26,19 +26,21 @@ export interface useNavPermValue {
   canBePermitted: boolean;
   /** Error */
   error: string;
-  /** Permission's name, as provided by browser */
+  /** Permission's name sent to query() */
   name: string;
+  /** Permission's name, as provided by browser */
+  descriptorName: string;
 }
 
 export default function useNavigatorPermissions(
-  name: PermissionName,
+  name: string,
   configuration?: { userVisibleOnly?: boolean; sysex?: boolean }
 ): useNavPermValue {
   const [error, setError] = useState("");
   const [permState, setPermState] = useState(ENavPermState.loading);
   const [permName, setPermName] = useState("");
 
-  const canQuery = typeof window?.navigator?.permissions?.query === "function";
+  const isAvailable = typeof window?.navigator?.permissions?.query === "function";
 
   const getChangeHandler = (perm: PermissionStatus) => (_event?: Event) => {
     setPermState(perm.state as ENavPermState);
@@ -46,16 +48,16 @@ export default function useNavigatorPermissions(
   };
 
   useEffect(() => {
-    if (!canQuery) {
+    if (!isAvailable) {
       setPermState(ENavPermState.unavailable);
-      setError("browser's Permissions API not available");
+      setError("Permissions API is not available in this browser");
       return;
     }
 
     let removePermissionListener = () => {};
 
     window.navigator.permissions
-      .query({ name, ...configuration })
+      .query({ name: (name as PermissionName), ...configuration })
       .then((permissionStatus) => {
         const onPermStatusChange = getChangeHandler(permissionStatus);
         onPermStatusChange();
@@ -67,6 +69,7 @@ export default function useNavigatorPermissions(
       })
       .catch((err) => {
         console.error({
+          permissionName: name,
           error: err,
           name: err["name"],
           trace: err["trace"],
@@ -75,16 +78,20 @@ export default function useNavigatorPermissions(
           constraint: err["constraint"],
         });
         setError(err.toString());
+        setPermState(ENavPermState.denied);
 
         if (isErrorOf(err, "DOMException")) {
           //TODO: wait for ready state and try again
+        }
+        if (isErrorOf(err, "TypeError")) {
+          setPermState(ENavPermState.unavailable);
         }
       });
 
     return () => {
       removePermissionListener();
     };
-  }, [name, configuration, canQuery]);
+  }, [name, configuration, isAvailable]);
 
   return {
     state: permState,
@@ -96,6 +103,7 @@ export default function useNavigatorPermissions(
       ENavPermState.unknown,
     ].includes(permState),
     error,
-    name: permName,
+    name,
+    descriptorName: permName,
   };
 }
