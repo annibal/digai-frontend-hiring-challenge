@@ -10,6 +10,13 @@ export default {
     ...twDefaultTheme,
     colors: {
       ...twDefaultColors,
+
+      // deprecated, setting these to "" to supress cli warnings
+      lightBlue: "",
+      warmGray: "",
+      trueGray: "",
+      coolGray: "",
+      blueGray: "",
     },
     extend: {},
   },

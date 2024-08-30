@@ -17,6 +17,8 @@ export default tseslint.config(
         ...globals.browser,
         JSX: true,
         require: true,
+        PermissionName: true,
+        PermissionState: true,
       },
       parserOptions: {
         ecmaVersion: "latest",
@@ -53,6 +55,8 @@ export default tseslint.config(
           allowWithName: "[eE]mpty$",
         },
       ],
+
+      "no-redeclare": "off",
 
       "no-unused-vars": "off",
       "@typescript-eslint/no-unused-vars": [
