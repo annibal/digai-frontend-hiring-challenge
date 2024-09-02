@@ -20,7 +20,7 @@ export default function InterviewVestibulumPage() {
 
   const { mediaDevices } = useMediaDevices([permMicrophone.isPermitted]);
   const availableMics: IFormSelectOption[] = mediaDevices
-    .filter((device) => device.isAudio && device.isInput)
+    .filter((device) => device.isAudio && device.isInput && !device.isDefault && !device.isCommsDefault)
     .map((device) => ({
       label: device.label,
       value: device.deviceId,
@@ -28,7 +28,7 @@ export default function InterviewVestibulumPage() {
     }));
   const [selectedMic, setSelectedMic] = useState("");
   const availableSpkrs: IFormSelectOption[] = mediaDevices
-    .filter((device) => device.isAudio && device.isOutput)
+    .filter((device) => device.isAudio && device.isOutput && !device.isDefault && !device.isCommsDefault)
     .map((device) => ({
       label: device.label,
       value: device.deviceId,
