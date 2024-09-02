@@ -4,7 +4,6 @@ Desafio para entrar na Digaí: Criar uma interface com a pergunta, gravação e 
 
 [`┣━━🡪 🔗 **Instruções** do Desafio`](https://marialauramendes.notion.site/Frontend-Hiring-Challenge-f998fa60b4774be795b5f2ac2a42dfd5)
 
- 
 ![Logo Digai](https://file.notion.so/f/f/38077f14-5ad3-4a4c-81f7-b2156fe90c40/7fa315e4-c280-4b06-97d3-5e07b20f4e0d/full-icon.svg?table=block&id=6e4b7902-a602-4bfd-9846-bcca7af40cc2&spaceId=38077f14-5ad3-4a4c-81f7-b2156fe90c40&expirationTimestamp=1724508000000&signature=bex36v4uOObSM6ddnTZoX4V8bOvxPb02GSL6DQXdrS0&downloadName=full-icon.svg)
 
 ⚞ ◥◣◢◤ ⚟
@@ -44,7 +43,8 @@ Desafio para entrar na Digaí: Criar uma interface com a pergunta, gravação e 
   * [ ] 🛠️ Vestibulum (Pre-interview) page
     * [ ] 🛠️ info & preparation
     * [ ] Test audio
-      * [ ] Permission hooks & components
+      * [x] Permission, Devices and Stream hooks
+      * [ ] Permission, Devices and Stream feedback components
       * [ ] Select input device, Select output device, update etc
       * [ ] Visual feedback for mic (simple, volume bar)
       * [ ] ↖️ play sound - test output
@@ -135,31 +135,38 @@ export default tseslint.config({
 
 // speaker-selection
 // microphone
-async function perm(permName) { 
-  navigator.permissions
-    .query({ name: permName })
-    .then((permissionStatus) => {
-      console.log(`${permName} permission status is ${permissionStatus.state}`);
-      permissionStatus.onchange = () => {
-        console.log(
-          `${permName} permission status has changed to ${permissionStatus.state}`,
-        );
-      };
-    });
-}
+// async function perm(permName) { 
+//   navigator.permissions
+//     .query({ name: permName })
+//     .then((permissionStatus) => {
+//       console.log(`${permName} permission status is ${permissionStatus.state}`);
+//       permissionStatus.onchange = () => {
+//         console.log(
+//           `${permName} permission status has changed to ${permissionStatus.state}`,
+//         );
+//       };
+//     });
+// }
 
 function updateDeviceList() {
-  
-  navigator.mediaDevices.enumerateDevices()
-    .then((devices) => {
-      devices.forEach((device) => {
-        console.log(`${device.kind}: ${device.label} id = ${device.deviceId} groupId = ${device.groupId}`);
+    const groups = new Map()
+    mediaDevicesService
+      .enumerateDevices()
+      .then((devices) => {
+        devices.forEach((device) => {
+            if (!groups.has(device.groupId)) {
+                groups.set(device.groupId, groups.size + 1)
+            }
+          console.log(
+            `label: ${device.label}\n  kind: ${device.kind.toUpperCase().replace("AUDIO", "AUDIO ").replace("VIDEO", "VIDEO ")}\n  id: ${device.deviceId}\n  groupId:${groups.get(device.groupId)}`
+          );
+        });
+      })
+      .catch((err) => {
+        console.log(`${err.name}: ${err.message}`);
       });
-    })
-    .catch((err) => {
-      console.log(`${err.name}: ${err.message}`);
-    });
-}
+  }
+updateDeviceList()
 
 
 const supportedConstraints = navigator.mediaDevices.getSupportedConstraints();
@@ -229,9 +236,9 @@ navigator.mediaDevices
     // insecure context | constraints is empty | all constraints are false
   });
 
-navigator.mediaDevices.ondevicechange = (event) => {
-  updateDeviceList();
-};
+// navigator.mediaDevices.ondevicechange = (event) => {
+//   updateDeviceList();
+// };
 
 
 function gotStream(stream) {  

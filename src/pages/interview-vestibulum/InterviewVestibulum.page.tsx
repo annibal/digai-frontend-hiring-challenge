@@ -6,8 +6,11 @@ import {
   PiEarSlash,
 } from "react-icons/pi";
 import useNavigatorPermissions from "@/components/navigator-permissions/useNavigatorPermissions";
-import useMediaDevices from "@/components/media-devices/useMediaDevices";
-import useMediaStream from "@/components/media-devices/useMediaStream";
+import useMediaDevices from "@/components/audio-media-services/useMediaDevices";
+import useMediaStream from "@/components/audio-media-services/useMediaStreamSource";
+import FormSelect, { IFormSelectOption } from "@/components/form/FormSelect";
+import { useState } from "react";
+import VolumeVisualizer from "@/components/audio-visualizers/VolumeVisualizer";
 
 export default function InterviewVestibulumPage() {
   const { interviewId } = useParams();
@@ -15,8 +18,26 @@ export default function InterviewVestibulumPage() {
   const permAudioCapture = useNavigatorPermissions("audio-capture");
   const permSpeakerSelection = useNavigatorPermissions("speaker-selection");
 
-  const { mediaDevices } = useMediaDevices([permMicrophone.isPermitted])
-  const mediaStreamData = useMediaStream({ disableImmediateCall: true});
+  const { mediaDevices } = useMediaDevices([permMicrophone.isPermitted]);
+  const availableMics: IFormSelectOption[] = mediaDevices
+    .filter((device) => device.isAudio && device.isInput)
+    .map((device) => ({
+      label: device.label,
+      value: device.deviceId,
+      key: device.id,
+    }));
+  const [selectedMic, setSelectedMic] = useState("");
+  const availableSpkrs: IFormSelectOption[] = mediaDevices
+    .filter((device) => device.isAudio && device.isOutput)
+    .map((device) => ({
+      label: device.label,
+      value: device.deviceId,
+      key: device.id,
+    }));
+  const [selectedSpk, setSelectedSpk] = useState("");
+
+  const mediaStreamData = useMediaStream({ deviceId: selectedMic });
+
 
   return (
     <>
@@ -48,34 +69,23 @@ export default function InterviewVestibulumPage() {
                 <div className="text-2xl appearance-none inline-block rounded leading-tight w-10 focus:outline-none focus:border-gray-500">
                   <PiMicrophoneFill />
                 </div>
-                <select
-                  className="block appearance-none w-full bg-white border border-gray-400 text-gray-700 py-3 pl-3 pr-8 rounded leading-tight focus:outline-none focus:border-gray-500"
-                  id="input-device"
-                  name="input-device"
-                >
-                  <option
-                    value=""
-                    disabled
-                    className="text-opacity-30 text-black"
-                  >
-                    - selecione -
-                  </option>
-                  <option value="M">Microfone</option>
-                  <option value="R">Realtek Audio</option>
-                  <option value="A">Audio Jack</option>
-                  <option value="H">Headset</option>
-                </select>
+                <FormSelect
+                  value={selectedMic}
+                  onChange={(v) => setSelectedMic(v as string)}
+                  options={availableMics}
+                />
 
                 {/* <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-700">
                   <PiCaretDownFill />
                 </div> */}
               </div>
               <div className="pl-9 py-3 flex items-center">
-                <button className="mr-4 inline-flex text-white bg-indigo-600 border-0 py-2 px-6 focus:outline-none hover:bg-indigo-700 rounded text-lg">
-                  <PiPlayFill />
+                <button className="mr-4 inline-flex text-indigo-700 bg-indigo-50 border border-indigo-700 py-2 px-6 focus:outline-none hover:bg-indigo-100 rounded text-lg">
+                  <PiEarSlash />
                 </button>
-                <p className="">Testar áudio</p>
+                <p className="">Escutar o dispositivo</p>
               </div>
+              <VolumeVisualizer analyserNode={mediaStreamData.analyserNode} />
             </div>
 
             <div className="w-full md:w-1/2 mb-4 md:mb-0">
@@ -89,51 +99,33 @@ export default function InterviewVestibulumPage() {
                 <div className="text-2xl appearance-none inline-block rounded leading-tight w-10 focus:outline-none focus:border-gray-500">
                   <PiSpeakerHighFill />
                 </div>
-                <select
-                  className="block appearance-none w-full bg-white border border-gray-400 text-gray-700 py-3 pl-3 pr-8 rounded leading-tight focus:outline-none focus:border-gray-500"
-                  id="input-device"
-                  name="input-device"
-                >
-                  <option
-                    value=""
-                    disabled
-                    className="text-opacity-30 text-black"
-                  >
-                    - selecione -
-                  </option>
-                  <option value="M">Speaker</option>
-                  <option value="R">Realtek high definition Audio</option>
-                  <option value="A">External Audio Jack</option>
-                  <option value="H">Headset 1</option>
-                  <option value="H">Headset 2</option>
-                </select>
-
-                {/* <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-700">
-                  <PiCaretDownFill />
-                </div> */}
+                <FormSelect
+                  value={selectedSpk}
+                  onChange={(v) => setSelectedSpk(v as string)}
+                  options={availableSpkrs}
+                />
               </div>
               <div className="pl-9 py-3 flex items-center">
-                <button className="mr-4 inline-flex text-indigo-700 bg-indigo-50 border border-indigo-700 py-2 px-6 focus:outline-none hover:bg-indigo-100 rounded text-lg">
-                  <PiEarSlash />
+                <button className="mr-4 inline-flex text-white bg-indigo-600 border-0 py-2 px-6 focus:outline-none hover:bg-indigo-700 rounded text-lg">
+                  <PiPlayFill />
                 </button>
-                <p className="">Escutar o dispositivo</p>
+                <p className="">Testar áudio</p>
               </div>
             </div>
           </div>
 
           <div className="mt-8">
-            <p className="text-blue-600 font-medium">
-              Permissões:
-            </p>
-
             {!permMicrophone.isPermitted && (
               <>
                 {permMicrophone.canBePermitted ? (
                   <div className="py-4 px-6 border border-blue-500 bg-blue-100 rounded-lg my-2">
-                    <p className="leading-tight">Por razões de segurança, seu navegador não concedeu o acesso ao microfone para esta página.</p>
+                    <p className="leading-tight">
+                      Por razões de segurança, seu navegador não concedeu o
+                      acesso ao microfone para esta página.
+                    </p>
                     <button
                       className="mr-4 inline-flex text-white bg-blue-600 border-0 py-2 px-6 focus:outline-none hover:bg-blue-700 rounded text-sm mt-6"
-                      onClick={() => mediaStreamData.manualUpdate()}
+                      onClick={() => mediaStreamData.getMediaStreamSource()}
                     >
                       Conceder Acesso
                     </button>
@@ -141,60 +133,42 @@ export default function InterviewVestibulumPage() {
                 ) : (
                   <div className="py-4 px-6 border border-red-500 bg-red-50 rounded-lg my-2">
                     <p className="">Microfone Indisponível</p>
-                    <p className="text-sm">Parece que você não tem acesso ao microfone :C</p>
-                    <p className="text-sm">Verifique as configurações do seu dispositivo e do seu navegador - para prosseguir é necessário o acesso ao microfone.</p>
+                    <p className="text-sm">
+                      Parece que você não tem acesso ao microfone :C
+                    </p>
+                    <p className="text-sm">
+                      Verifique as configurações do seu dispositivo e do seu
+                      navegador - para prosseguir é necessário o acesso ao
+                      microfone.
+                    </p>
                   </div>
                 )}
               </>
             )}
-
-            <ul>
-              <li>
-                <span className="font-bold">● {permMicrophone.name}</span>: {permMicrophone.state}
-              </li>
-              <li>
-                <span className="font-bold">● {permAudioCapture.name}</span>: {permAudioCapture.state}
-              </li>
-              <li>
-                <span className="font-bold">● {permSpeakerSelection.name}</span>: {permSpeakerSelection.state}
-              </li>
-            </ul>
           </div>
 
           <div className="mt-8">
-            <p className="text-blue-600 font-medium">
-              Dispositivos:
-            </p>
-
-            <ul>
-              {mediaDevices.map((mediaDevice) => (
-                <li key={mediaDevice.id}>
-                  <p>
-                    ● <span className="text-gray-400 font-small">{mediaDevice.kindText}</span>{' '}
-                    <span className="text-indigo-400 font-small">[ G:{mediaDevice.groupNumber} ]</span>{' '}
-                    {mediaDevice.label}
-                  </p>
-                </li>
-              ))}
-            </ul>
-          </div>
-
-          <div className="mt-8">
-            <p className="text-gray-600 font-medium">
-              Instruções:
-            </p>
+            <p className="text-gray-600 font-medium">Instruções:</p>
             <p>
-              - Ler a pergunta<br />
-              - Gravar a resposta<br />
-              - Encerrar a gravação<br />
-              - Ouvir a própria gravação<br />
-              - Excluir gravação para re-gravar<br />
-              - Salvar a resposta<br />
-              - Ir para a próxima pergunta<br />
-              - Finalizar a entrevista<br />
+              - Ler a pergunta
+              <br />
+              - Gravar a resposta
+              <br />
+              - Encerrar a gravação
+              <br />
+              - Ouvir a própria gravação
+              <br />
+              - Excluir gravação para re-gravar
+              <br />
+              - Salvar a resposta
+              <br />
+              - Ir para a próxima pergunta
+              <br />
+              - Finalizar a entrevista
+              <br />
             </p>
           </div>
-          
+
           <div className="mt-8 text-right">
             <Link
               to={`/interview/${interviewId}`}

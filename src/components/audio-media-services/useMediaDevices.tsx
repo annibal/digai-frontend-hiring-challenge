@@ -71,6 +71,7 @@ export default function useMediaDevices(deps: any[]) {
 
         setMediaDevices(devicesWithGIndex);
         setError("");
+        console.log({ devices, devicesWithGIndex })
       })
       .catch((err) => {
         setMediaDevices([]);
