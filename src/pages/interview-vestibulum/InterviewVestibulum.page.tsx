@@ -135,6 +135,9 @@ export default function InterviewVestibulumPage() {
                   <PiCaretDownFill />
                 </div> */}
               </div>
+              <div className="pl-9 mt-3 mb-1 flex items-center">
+                <VolumeVisualizer className="h-6 w-full" analyserNode={mediaStreamData.analyserNode} />
+              </div>
               <div className="pl-9 py-3 flex items-center">
                 <button onClick={() => setisMicPlayback(!isMicPlayback)}
                   className={twMerge(
@@ -149,7 +152,6 @@ export default function InterviewVestibulumPage() {
                 </button>
                 <p className="">Escutar o dispositivo</p>
               </div>
-              <VolumeVisualizer analyserNode={mediaStreamData.analyserNode} />
             </div>
 
             <div className="w-full md:w-1/2 mb-4 md:mb-0">
