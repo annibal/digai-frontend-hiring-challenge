@@ -146,6 +146,33 @@ export default function useMediaStreamSource({
     } catch (err) {
       setError(`${err.name}: ${err.message}`);
       console.error(`${err.name}: ${err.message}`);
+
+      // "SecurityError"
+      // You need to use HTTPS to be able to select audio output devices.
+
+      // "AbortError"
+      // throw if some problem occurred which prevented the device from being used.
+
+      // "InvalidStateError"
+      // Thrown if current document is not fully active.
+
+      // "NotAllowedError"
+      // Permissions Policy | HTTP rather than HTTPS | Thrown if one or more of the requested source devices cannot be used at this time
+
+      // "NotFoundError"
+      // Thrown if no media tracks of the type specified were found that satisfy the given constraints.
+
+      // "NotReadableError"
+      // A hardware error occurred which prevented access to the device.
+
+      // "OverconstrainedError"
+      // no candidate devices which met the criteria requested - human-readable message explaining the problem.
+
+      // "SecurityError"
+      // Thrown if user media support is disabled
+
+      // "TypeError"
+      // insecure context | constraints is empty | all constraints are false
     }
   }
 

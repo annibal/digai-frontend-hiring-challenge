@@ -20,7 +20,13 @@ export default function InterviewVestibulumPage() {
 
   const { mediaDevices } = useMediaDevices([permMicrophone.isPermitted]);
   const availableMics: IFormSelectOption[] = mediaDevices
-    .filter((device) => device.isAudio && device.isInput && !device.isDefault && !device.isCommsDefault)
+    .filter(
+      (device) =>
+        device.isAudio &&
+        device.isInput &&
+        !device.isDefault &&
+        !device.isCommsDefault
+    )
     .map((device) => ({
       label: device.label,
       value: device.deviceId,
@@ -30,32 +36,54 @@ export default function InterviewVestibulumPage() {
     label: "- selecione -",
     value: "",
     key: "selecione",
-    disabled: true
-  })
+    disabled: true,
+  });
   const [selectedMic, setSelectedMic] = useState("");
 
   useEffect(() => {
     if (!selectedMic) {
-      const audioInputDevices = mediaDevices.filter(device => device.isAudio && device.isInput);
+      const audioInputDevices = mediaDevices.filter(
+        (device) => device.isAudio && device.isInput
+      );
 
-      const defaultStandardGroup = audioInputDevices.find(device => device.isDefault)?.groupId
-      const defaultStandardId = audioInputDevices.find(device => !device.isCommsDefault && !device.isDefault && device.groupId === defaultStandardGroup)?.deviceId
+      const defaultStandardGroup = audioInputDevices.find(
+        (device) => device.isDefault
+      )?.groupId;
+      const defaultStandardId = audioInputDevices.find(
+        (device) =>
+          !device.isCommsDefault &&
+          !device.isDefault &&
+          device.groupId === defaultStandardGroup
+      )?.deviceId;
       if (defaultStandardId) {
         setSelectedMic(defaultStandardId);
         return;
       }
-      
-      const defaultCommsGroup = audioInputDevices.find(device => device.isCommsDefault)?.groupId
-      const defaultCommsId = audioInputDevices.find(device => !device.isCommsDefault && !device.isDefault && device.groupId === defaultCommsGroup)?.deviceId
+
+      const defaultCommsGroup = audioInputDevices.find(
+        (device) => device.isCommsDefault
+      )?.groupId;
+      const defaultCommsId = audioInputDevices.find(
+        (device) =>
+          !device.isCommsDefault &&
+          !device.isDefault &&
+          device.groupId === defaultCommsGroup
+      )?.deviceId;
       if (defaultCommsId) {
         setSelectedMic(defaultCommsId);
         return;
       }
     }
-  }, [mediaDevices])
+  }, [mediaDevices]);
 
   const availableSpkrs: IFormSelectOption[] = mediaDevices
-    .filter((device) => device.isAudio && device.isOutput && !device.isDefault && !device.isCommsDefault)
+    .filter(
+      (device) =>
+        device.isAudio &&
+        device.isOutput &&
+        !device.isDefault &&
+        !device.isCommsDefault
+    )
     .map((device) => ({
       label: device.label,
       value: device.deviceId,
@@ -65,54 +93,62 @@ export default function InterviewVestibulumPage() {
     label: "- selecione -",
     value: "",
     key: "selecione",
-    disabled: true
+    disabled: true,
   });
   const [selectedSpk, setSelectedSpk] = useState("");
 
   useEffect(() => {
     if (!selectedSpk) {
-      const audioOutputDevices = mediaDevices.filter(device => device.isAudio && device.isOutput);
-      
-      const defaultStandardGroup = audioOutputDevices.find(device => device.isDefault)?.groupId
-      const defaultStandardId = audioOutputDevices.find(device => !device.isCommsDefault && !device.isDefault && device.groupId === defaultStandardGroup)?.deviceId
+      const audioOutputDevices = mediaDevices.filter(
+        (device) => device.isAudio && device.isOutput
+      );
+
+      const defaultStandardGroup = audioOutputDevices.find(
+        (device) => device.isDefault
+      )?.groupId;
+      const defaultStandardId = audioOutputDevices.find(
+        (device) =>
+          !device.isCommsDefault &&
+          !device.isDefault &&
+          device.groupId === defaultStandardGroup
+      )?.deviceId;
       if (defaultStandardId) {
         setSelectedSpk(defaultStandardId);
         return;
       }
-      
-      const defaultCommsGroup = audioOutputDevices.find(device => device.isCommsDefault)?.groupId
-      const defaultCommsId = audioOutputDevices.find(device => !device.isCommsDefault && !device.isDefault && device.groupId === defaultCommsGroup)?.deviceId
+
+      const defaultCommsGroup = audioOutputDevices.find(
+        (device) => device.isCommsDefault
+      )?.groupId;
+      const defaultCommsId = audioOutputDevices.find(
+        (device) =>
+          !device.isCommsDefault &&
+          !device.isDefault &&
+          device.groupId === defaultCommsGroup
+      )?.deviceId;
       if (defaultCommsId) {
         setSelectedSpk(defaultCommsId);
         return;
       }
     }
-  }, [mediaDevices])
+  }, [mediaDevices]);
 
   const [isMicPlayback, setisMicPlayback] = useState(false);
-  
-  const mediaStreamData = useMediaStream({ inputDeviceId: selectedMic, outputDeviceId: selectedSpk, playback: isMicPlayback });
-  // console.log('mediaStreamData :>> ', mediaStreamData);
 
+  const mediaStreamData = useMediaStream({
+    inputDeviceId: selectedMic,
+    outputDeviceId: selectedSpk,
+    playback: isMicPlayback,
+  });
+  // console.log('mediaStreamData :>> ', mediaStreamData);
 
   return (
     <>
       <h1 className="mb-8 title-font text-3xl font-medium text-gray-900 max-w-2xl xl:max-w-none mx-auto">
         Preparação para a Entrevista
       </h1>
-      <section className="pb-24 flex xl:flex-row flex-col justify-center">
-        <div className="w-full max-w-2xl border-2 border-gray-300 px-2 sm:px-6 mb-8 py-4 rounded-lg bg-white mx-auto">
-          <div
-            className="w-full h-full border border-black flex justify-center items-center"
-            style={{ minHeight: 300 }}
-          >
-            <span className="text-opacity-30 text-xl text-black">
-              &lt; Audio Visualizer &gt;
-            </span>
-          </div>
-        </div>
-
-        <div className="w-full flex-grow max-w-2xl xl:max-w-none mb-8 xl:pl-8 mx-auto">
+      <section className="pb-24 flex xl:flex-row flex-col">
+        <div>
           <div className="md:flex md:justify-between gap-8">
             <div className="w-full md:w-1/2 mb-4 md:mb-0">
               <label
@@ -135,15 +171,15 @@ export default function InterviewVestibulumPage() {
                   <PiCaretDownFill />
                 </div> */}
               </div>
-              <div className="pl-9 mt-3 mb-1 flex items-center">
-                <VolumeVisualizer className="h-6 w-full" analyserNode={mediaStreamData.analyserNode} />
-              </div>
               <div className="pl-9 py-3 flex items-center">
-                <button onClick={() => setisMicPlayback(!isMicPlayback)}
+                <button
+                  onClick={() => setisMicPlayback(!isMicPlayback)}
                   className={twMerge(
                     "mr-4 py-2 px-6",
                     "inline-flex text-lg",
-                    isMicPlayback ? "text-white bg-indigo-600 hover:bg-indigo-700" : "text-indigo-700 bg-indigo-50 hover:bg-indigo-100",
+                    isMicPlayback
+                      ? "text-white bg-indigo-600 hover:bg-indigo-700"
+                      : "text-indigo-700 bg-indigo-50 hover:bg-indigo-100",
                     "border border-indigo-700",
                     "focus:outline-none rounded"
                   )}
@@ -151,6 +187,12 @@ export default function InterviewVestibulumPage() {
                   <PiEarSlash />
                 </button>
                 <p className="">Escutar o dispositivo</p>
+              </div>
+              <div className="pl-9 mt-3 mb-1 flex items-center">
+                <VolumeVisualizer
+                  className="h-6 w-full"
+                  analyserNode={mediaStreamData.analyserNode}
+                />
               </div>
             </div>
 
@@ -171,14 +213,17 @@ export default function InterviewVestibulumPage() {
                   options={availableSpkrs}
                 />
               </div>
-              
+
               <div className="pl-9 py-3 flex items-center">
-                <TestSpeakerTones className="" audioContext={mediaStreamData.audioCtx} />
+                <TestSpeakerTones
+                  className=""
+                  audioContext={mediaStreamData.audioCtx}
+                />
               </div>
             </div>
           </div>
 
-          <div className="mt-8">
+          <div className="mt-8 pl-9">
             {!permMicrophone.isPermitted && (
               <>
                 {permMicrophone.canBePermitted ? (
@@ -211,7 +256,7 @@ export default function InterviewVestibulumPage() {
             )}
           </div>
 
-          <div className="mt-8">
+          <div className="mt-8 pl-9">
             <p className="text-gray-600 font-medium">Instruções:</p>
             <p>
               - Ler a pergunta
@@ -233,7 +278,7 @@ export default function InterviewVestibulumPage() {
             </p>
           </div>
 
-          <div className="mt-8 text-right">
+          <div className="mt-8 text-left pl-9">
             <Link
               to={`/interview/${interviewId}`}
               className="mt-8 inline-flex items-center leading-none text-white bg-indigo-500 border-0 py-4 px-8 focus:outline-none hover:bg-indigo-600 rounded text-xl"
@@ -243,6 +288,21 @@ export default function InterviewVestibulumPage() {
             </Link>
           </div>
         </div>
+
+        {/* <div className="w-full max-w-2xl border-2 border-gray-300 px-2 sm:px-6 mb-8 py-4 rounded-lg bg-white mx-auto">
+          <div
+            className="w-full h-full border border-black flex justify-center items-center"
+            style={{ minHeight: 300 }}
+          >
+            <span className="text-opacity-30 text-xl text-black">
+              &lt; Audio Visualizer &gt;
+            </span>
+          </div>
+        </div>
+
+        <div className="w-full flex-grow max-w-2xl xl:max-w-none mb-8 xl:pl-8 mx-auto">
+          
+        </div> */}
         {/* <div className="lg:max-w-lg lg:w-full md:w-1/2 w-5/6">
           <img
             className="object-cover object-center rounded"

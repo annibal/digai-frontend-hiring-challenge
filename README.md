@@ -32,7 +32,7 @@ Desafio para entrar na Digaí: Criar uma interface com a pergunta, gravação e 
   * [x] Working simple app
   * [x] Tailwind
     * ~[ ] styled-components~
-    * [ ] split layout blocks into components
+    * [x] split layout blocks into components
   * [x] react router
     * [ ] central routes object
 * Interface
@@ -40,15 +40,15 @@ Desafio para entrar na Digaí: Criar uma interface com a pergunta, gravação e 
     * [ ] ↖️ List of interviews - New / Submitted / Replied
     * [ ] ↖️ About ?
     * [ ] ↖️ Profile ?
-  * [ ] 🛠️ Vestibulum (Pre-interview) page
-    * [ ] 🛠️ info & preparation
-    * [ ] Test audio
+  * [x] 🛠️ Vestibulum (Pre-interview) page
+    * [x] 🛠️ info & preparation
+    * [x] Test audio
       * [x] Permission, Devices and Stream hooks
-      * [ ] Permission, Devices and Stream feedback components
-      * [ ] Select input device, Select output device, update etc
-      * [ ] Visual feedback for mic (simple, volume bar)
-      * [ ] ↖️ play sound - test output
-      * [ ] ↖️ listen to yourself
+      * [x] Permission, Devices and Stream feedback components
+      * [x] Select input device, Select output device, update etc
+      * [x] Visual feedback for mic (simple, volume bar)
+      * [x] ↖️ play sound - test output
+      * [x] ↖️ listen to yourself
       * [ ] ↖️ detailed audio visualizer
       * [ ] ↖️ volume slider
       * [ ] ↖️ audio effects
@@ -128,118 +128,9 @@ export default tseslint.config({
 })
 ```
 
-
-
+---
 
 ```javascript
-
-// speaker-selection
-// microphone
-// async function perm(permName) { 
-//   navigator.permissions
-//     .query({ name: permName })
-//     .then((permissionStatus) => {
-//       console.log(`${permName} permission status is ${permissionStatus.state}`);
-//       permissionStatus.onchange = () => {
-//         console.log(
-//           `${permName} permission status has changed to ${permissionStatus.state}`,
-//         );
-//       };
-//     });
-// }
-
-function updateDeviceList() {
-    const groups = new Map()
-    mediaDevicesService
-      .enumerateDevices()
-      .then((devices) => {
-        devices.forEach((device) => {
-            if (!groups.has(device.groupId)) {
-                groups.set(device.groupId, groups.size + 1)
-            }
-          console.log(
-            `label: ${device.label}\n  kind: ${device.kind.toUpperCase().replace("AUDIO", "AUDIO ").replace("VIDEO", "VIDEO ")}\n  id: ${device.deviceId}\n  groupId:${groups.get(device.groupId)}`
-          );
-        });
-      })
-      .catch((err) => {
-        console.log(`${err.name}: ${err.message}`);
-      });
-  }
-updateDeviceList()
-
-
-const supportedConstraints = navigator.mediaDevices.getSupportedConstraints();
-
-MediaStreamTrack: getSettings()
-
-const constraints = {
-  video: {
-    width: 160,
-    height: 120,
-    frameRate: 30,
-  },
-  audio: {
-    sampleRate: 44100,
-    sampleSize: 16,
-    volume: 0.25,
-    deviceId: audioSource ? {exact: audioSource} : undefined
-  }
-};
-
-async function getMedia(constraints) {
-  let stream = null;
-
-  try {
-    stream = await navigator.mediaDevices.getUserMedia(constraints);
-      window.localStream = stream;
-      window.localAudio.srcObject = stream;
-      window.localAudio.autoplay = true;
-    updateDeviceList();
-  } catch (err) {
-    log(`${err.name}: ${err.message}`);
-    /* handle the error */
-  }
-}
-// ask for permission 
-navigator.mediaDevices
-  .getUserMedia(constraints)
-  .then((stream) => {
-    videoElement.srcObject = stream;
-  })
-  .catch((err) => {
-    if (error.name === 'SecurityError') {
-      errorMessage = `You need to use HTTPS for selecting audio output device: ${error}`;
-    }
-    // "AbortError"
-    // throw if some problem occurred which prevented the device from being used.
-
-    // "InvalidStateError"
-    // Thrown if current document is not fully active.
-
-    // "NotAllowedError"
-    // Permissions Policy | HTTP rather than HTTPS | Thrown if one or more of the requested source devices cannot be used at this time
-
-    // "NotFoundError"
-    // Thrown if no media tracks of the type specified were found that satisfy the given constraints.
-
-    // "NotReadableError"
-    // A hardware error occurred which prevented access to the device.
-
-    // "OverconstrainedError"
-    // no candidate devices which met the criteria requested - human-readable message explaining the problem.
-
-    // "SecurityError"
-    // Thrown if user media support is disabled
-
-    // "TypeError"
-    // insecure context | constraints is empty | all constraints are false
-  });
-
-// navigator.mediaDevices.ondevicechange = (event) => {
-//   updateDeviceList();
-// };
-
 
 function gotStream(stream) {  
   rec = new MediaRecorder(stream);
@@ -270,8 +161,7 @@ https://github.com/cwilso/Audio-Input-Effects/blob/main/js/waveshaper.js#L33
 visualizer:
 https://github.com/imaimai17468/ts-audio-visualizer/blob/main/src/components/AudioVisualizer/AudioVisualizer.tsx
 
-
-
-
+nice:
+https://developer.mozilla.org/en-US/docs/Web/API/AnalyserNode/getByteTimeDomainData
 
 ```
