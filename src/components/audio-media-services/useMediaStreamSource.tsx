@@ -1,7 +1,9 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 export interface UseMediaStreamSourceProps {
-  deviceId?: string;
+  inputDeviceId?: string;
+  outputDeviceId?: string;
+  playback?: boolean;
 }
 export interface UseMediaStreamSourceValue {
   error: string;
@@ -17,8 +19,35 @@ export interface UseMediaStreamSourceValue {
   }>;
 }
 
+function disconnectPlayback(
+  source: MediaStreamAudioSourceNode,
+  destination: AudioNode
+) {
+  try {
+    source.disconnect(destination);
+  } catch (e) {
+    console.debug("Error on disconnecting playback", { source, destination });
+    console.debug(e);
+  }
+}
+
+function connectPlayback(
+  source: MediaStreamAudioSourceNode,
+  destination: AudioNode
+) {
+  try {
+    const res = source.connect(destination);
+    return res;
+  } catch (e) {
+    console.debug("Error on connecting playback", { source, destination });
+    console.debug(e);
+  }
+}
+
 export default function useMediaStreamSource({
-  deviceId,
+  inputDeviceId,
+  outputDeviceId,
+  playback,
 }: UseMediaStreamSourceProps) {
   const [error, setError] = useState("");
   const [mediaStream, setMediaStream] = useState<MediaStream | null>(null);
@@ -26,12 +55,33 @@ export default function useMediaStreamSource({
   const [analyserNode, setAnalyserNode] = useState<AnalyserNode | null>(null);
   const [mediaSource, setMediaSource] =
     useState<MediaStreamAudioSourceNode | null>(null);
+  const playbackRef = useRef<AudioNode>();
+  const audioCtxRef = useRef<AudioContext>();
+  const inputDeviceRef = useRef<string>();
+  const outputDeviceRef = useRef<string>();
 
   const mediaDevicesService = window?.navigator?.mediaDevices;
   const isAvailable = typeof mediaDevicesService?.getUserMedia === "function";
 
+  // useEffect(() => {
+  //   if (inputDeviceRef.current != inputDeviceId) {
+  //     console.log("input device changed", { newState: inputDeviceId, oldState: inputDeviceRef.current});
+  //     inputDeviceRef.current = inputDeviceId;
+  //     disconnectPlayback(mediaSource, playbackRef.current);
+  //   }
+  // }, [inputDeviceId])
+
+  // useEffect(() => {
+  //   if (outputDeviceRef.current != outputDeviceId) {
+  //     console.log("output device changed", { newState: outputDeviceId, oldState: outputDeviceRef.current});
+  //     outputDeviceRef.current = outputDeviceId;
+  //     disconnectPlayback(mediaSource, playbackRef.current);
+  //   }
+  // }, [outputDeviceId])
+
   async function getMediaStreamSource(
-    paramDeviceId?: string
+    paramInputDeviceId?: string,
+    paramOutputDeviceId?: string
   ) {
     if (!isAvailable) {
       setMediaStream(null);
@@ -39,14 +89,15 @@ export default function useMediaStreamSource({
       return;
     }
 
-    console.log("getMediaStreamSource", { paramDeviceId, deviceId });
-    const audioSource = paramDeviceId ?? deviceId;
+    const audioSource = paramInputDeviceId ?? inputDeviceId;
+    const audioDest = paramOutputDeviceId ?? outputDeviceId;
+
+    disconnectPlayback(mediaSource, playbackRef.current);
 
     const constraints = {
       audio: {
         sampleRate: 44100,
         sampleSize: 16,
-        // volume: 0.25,
         deviceId: audioSource ? { exact: audioSource } : undefined,
       },
     };
@@ -55,24 +106,36 @@ export default function useMediaStreamSource({
       const stream = await navigator.mediaDevices.getUserMedia(constraints);
       setError("");
       setMediaStream(stream);
-      console.log("setMediaStream:", stream);
+      console.debug("setMediaStream:", stream);
 
-      const newAudioCtx = new AudioContext();
+      const ctxOpts: AudioContextOptions = {};
+      if (audioDest) {
+        ctxOpts["sinkId"] = audioDest;
+      }
+      const newAudioCtx = new AudioContext(ctxOpts);
       setAudioCtx(newAudioCtx);
-      console.log("setAudioCtx:", newAudioCtx);
+      console.debug("setAudioCtx:", newAudioCtx);
+      audioCtxRef.current = newAudioCtx;
+
+      // newAudioCtx.onstatechange = function () {
+      //   console.log(newAudioCtx.state);
+      // };
 
       const analyser = newAudioCtx.createAnalyser();
       setAnalyserNode(analyser);
-      console.log("setAnalyserNode:", analyser);
+      console.debug("setAnalyserNode:", analyser);
 
       const source = newAudioCtx.createMediaStreamSource(stream);
       source.connect(analyser);
       setMediaSource(source);
-      console.log("setMediaSource:", source);
+      console.debug("setMediaSource:", source);
 
       // window.localStream = stream;
       // window.localAudio.srcObject = stream;
       // window.localAudio.autoplay = true;
+      if (playback) {
+        playbackRef.current = connectPlayback(source, newAudioCtx.destination);
+      }
 
       return {
         mediaStream: stream,
@@ -86,9 +149,42 @@ export default function useMediaStreamSource({
     }
   }
 
+  function setPlayback(active: boolean) {
+    if (!mediaSource || !audioCtx) return;
+
+    if (active) {
+      if (playbackRef.current) {
+        disconnectPlayback(mediaSource, playbackRef.current);
+      }
+      playbackRef.current = connectPlayback(mediaSource, audioCtx.destination);
+    } else {
+      if (playbackRef.current) {
+        disconnectPlayback(mediaSource, playbackRef.current);
+        playbackRef.current = null;
+      }
+    }
+  }
+
   useEffect(() => {
-    getMediaStreamSource();
-  }, [deviceId]);
+    let fnTeardown = () => {
+      console.debug("teardown:empty - mediaStream");
+    };
+
+    getMediaStreamSource().then((mediaStreamData) => {
+      fnTeardown = () => {
+        console.debug("teardown:ok - mediaStream");
+        mediaStreamData.audioCtx.close();
+      };
+    });
+
+    return () => {
+      fnTeardown();
+    };
+  }, [inputDeviceId, outputDeviceId]);
+
+  useEffect(() => {
+    setPlayback(playback);
+  }, [playback, inputDeviceId, outputDeviceId]);
 
   return {
     error,
@@ -97,5 +193,6 @@ export default function useMediaStreamSource({
     analyserNode,
     mediaSource,
     getMediaStreamSource,
+    setPlayback,
   } as UseMediaStreamSourceValue;
 }

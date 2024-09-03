@@ -31,9 +31,10 @@ export default function FormSelect({
     <select
       className={twMerge(
         "py-3 pl-3 pr-8",
+        "block w-full leading-tight",
         "bg-white text-gray-700",
         "border border-gray-400 focus:border-gray-500",
-        "block appearance-none w-full  focus:outline-none rounded leading-tight",
+        "appearance-none focus:outline-none rounded",
         className
       )}
       {...restProps}

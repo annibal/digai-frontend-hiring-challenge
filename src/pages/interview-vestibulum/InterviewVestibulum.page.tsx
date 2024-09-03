@@ -9,14 +9,14 @@ import useNavigatorPermissions from "@/components/navigator-permissions/useNavig
 import useMediaDevices from "@/components/audio-media-services/useMediaDevices";
 import useMediaStream from "@/components/audio-media-services/useMediaStreamSource";
 import FormSelect, { IFormSelectOption } from "@/components/form/FormSelect";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import VolumeVisualizer from "@/components/audio-visualizers/VolumeVisualizer";
+import { twMerge } from "tailwind-merge";
+import TestSpeakerTones from "./TestSpeakerTones";
 
 export default function InterviewVestibulumPage() {
   const { interviewId } = useParams();
-  const permMicrophone = useNavigatorPermissions("microphone");
-  const permAudioCapture = useNavigatorPermissions("audio-capture");
-  const permSpeakerSelection = useNavigatorPermissions("speaker-selection");
+  const permMicrophone = useNavigatorPermissions("microphone"); // audio-capture, speaker-selection
 
   const { mediaDevices } = useMediaDevices([permMicrophone.isPermitted]);
   const availableMics: IFormSelectOption[] = mediaDevices
@@ -26,7 +26,34 @@ export default function InterviewVestibulumPage() {
       value: device.deviceId,
       key: device.id,
     }));
+  availableMics.unshift({
+    label: "- selecione -",
+    value: "",
+    key: "selecione",
+    disabled: true
+  })
   const [selectedMic, setSelectedMic] = useState("");
+
+  useEffect(() => {
+    if (!selectedMic) {
+      const audioInputDevices = mediaDevices.filter(device => device.isAudio && device.isInput);
+
+      const defaultStandardGroup = audioInputDevices.find(device => device.isDefault)?.groupId
+      const defaultStandardId = audioInputDevices.find(device => !device.isCommsDefault && !device.isDefault && device.groupId === defaultStandardGroup)?.deviceId
+      if (defaultStandardId) {
+        setSelectedMic(defaultStandardId);
+        return;
+      }
+      
+      const defaultCommsGroup = audioInputDevices.find(device => device.isCommsDefault)?.groupId
+      const defaultCommsId = audioInputDevices.find(device => !device.isCommsDefault && !device.isDefault && device.groupId === defaultCommsGroup)?.deviceId
+      if (defaultCommsId) {
+        setSelectedMic(defaultCommsId);
+        return;
+      }
+    }
+  }, [mediaDevices])
+
   const availableSpkrs: IFormSelectOption[] = mediaDevices
     .filter((device) => device.isAudio && device.isOutput && !device.isDefault && !device.isCommsDefault)
     .map((device) => ({
@@ -34,9 +61,38 @@ export default function InterviewVestibulumPage() {
       value: device.deviceId,
       key: device.id,
     }));
+  availableSpkrs.unshift({
+    label: "- selecione -",
+    value: "",
+    key: "selecione",
+    disabled: true
+  });
   const [selectedSpk, setSelectedSpk] = useState("");
 
-  const mediaStreamData = useMediaStream({ deviceId: selectedMic });
+  useEffect(() => {
+    if (!selectedSpk) {
+      const audioOutputDevices = mediaDevices.filter(device => device.isAudio && device.isOutput);
+      
+      const defaultStandardGroup = audioOutputDevices.find(device => device.isDefault)?.groupId
+      const defaultStandardId = audioOutputDevices.find(device => !device.isCommsDefault && !device.isDefault && device.groupId === defaultStandardGroup)?.deviceId
+      if (defaultStandardId) {
+        setSelectedSpk(defaultStandardId);
+        return;
+      }
+      
+      const defaultCommsGroup = audioOutputDevices.find(device => device.isCommsDefault)?.groupId
+      const defaultCommsId = audioOutputDevices.find(device => !device.isCommsDefault && !device.isDefault && device.groupId === defaultCommsGroup)?.deviceId
+      if (defaultCommsId) {
+        setSelectedSpk(defaultCommsId);
+        return;
+      }
+    }
+  }, [mediaDevices])
+
+  const [isMicPlayback, setisMicPlayback] = useState(false);
+  
+  const mediaStreamData = useMediaStream({ inputDeviceId: selectedMic, outputDeviceId: selectedSpk, playback: isMicPlayback });
+  // console.log('mediaStreamData :>> ', mediaStreamData);
 
 
   return (
@@ -80,7 +136,15 @@ export default function InterviewVestibulumPage() {
                 </div> */}
               </div>
               <div className="pl-9 py-3 flex items-center">
-                <button className="mr-4 inline-flex text-indigo-700 bg-indigo-50 border border-indigo-700 py-2 px-6 focus:outline-none hover:bg-indigo-100 rounded text-lg">
+                <button onClick={() => setisMicPlayback(!isMicPlayback)}
+                  className={twMerge(
+                    "mr-4 py-2 px-6",
+                    "inline-flex text-lg",
+                    isMicPlayback ? "text-white bg-indigo-600 hover:bg-indigo-700" : "text-indigo-700 bg-indigo-50 hover:bg-indigo-100",
+                    "border border-indigo-700",
+                    "focus:outline-none rounded"
+                  )}
+                >
                   <PiEarSlash />
                 </button>
                 <p className="">Escutar o dispositivo</p>
@@ -105,11 +169,9 @@ export default function InterviewVestibulumPage() {
                   options={availableSpkrs}
                 />
               </div>
+              
               <div className="pl-9 py-3 flex items-center">
-                <button className="mr-4 inline-flex text-white bg-indigo-600 border-0 py-2 px-6 focus:outline-none hover:bg-indigo-700 rounded text-lg">
-                  <PiPlayFill />
-                </button>
-                <p className="">Testar áudio</p>
+                <TestSpeakerTones className="" audioContext={mediaStreamData.audioCtx} />
               </div>
             </div>
           </div>

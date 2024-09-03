@@ -47,7 +47,6 @@ export default function useMediaDevices(deps: any[]) {
         const groups = new Map();
         const devicesInfoExt = devices
           .map((device) => {
-            console.log(device.toJSON());
             if (!device.deviceId || !device.groupId) {
               return;
             }
@@ -118,7 +117,8 @@ export default function useMediaDevices(deps: any[]) {
 
         setMediaDevices(devicesInfoExt);
         setError("");
-        console.log({ devices, devicesInfoExt });
+        console.debug('devicesInfoExt :>> ', devicesInfoExt);
+        console.debug('devices :>> ', devices);
       })
       .catch((err) => {
         setMediaDevices([]);
