@@ -67,7 +67,6 @@ export default function VolumeVisualizer({
                 "w-full flex-1 h-100 block rounded-sm",
                 "flex flex-col",
                 "bg-purple-900",
-                stepClassName
               )}
             ></div>
           </div>

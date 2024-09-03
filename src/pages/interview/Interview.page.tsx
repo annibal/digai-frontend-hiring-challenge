@@ -7,17 +7,63 @@ import {
   PiStopFill,
   PiFloppyDiskBackFill,
   PiPaperPlaneTiltFill,
+  PiMicrophoneFill,
 } from "react-icons/pi";
+import RecorderButton from "./RecorderButton";
+import { ReactNode, useState } from "react";
+import useAudioMediaServices from "@/components/audio-media-services/useAudioMediaServices";
+import VolumeVisualizer from "@/components/audio-visualizers/VolumeVisualizer";
 
 export default function InterviewPage() {
   const { interviewId } = useParams();
 
+  const {
+    permMicrophone,
+    mediaStreamData,
+
+    isMicPlayback,
+    setisMicPlayback,
+
+    mediaDevices,
+
+    availableMics,
+    selectedMic,
+    setSelectedMic,
+
+    availableSpkrs,
+    selectedSpk,
+    setSelectedSpk,
+  } = useAudioMediaServices();
+
+  const [isPlaying, setIsPlaying] = useState(false);
+  const [isRecording, setIsRecording] = useState(false);
+  const [hasAnswerRecorded, setHasAnswerRecorded] = useState(false);
+
   return (
     <>
       <section className="flex items-center flex-col">
-        <h1 className="title-font text-3xl mb-8 font-medium text-gray-900">
-          Entrevista
-        </h1>
+        <div className="flex items-center gap-2 w-full flex">
+          <div className="w-48 hidden md:block"></div>
+
+          <h1 className="title-font text-3xl mb-8 font-medium text-gray-900 md:mx-auto mr-auto">
+            Entrevista
+          </h1>
+
+          <div className="w-48 flex justify-center items-center">
+            <div className="mb-6 py-2 px-3 w-full border-2 border-gray-300 rounded-lg bg-white flex gap-3">
+              <div className="text-xl appearance-none leading-tight">
+                <PiMicrophoneFill />
+              </div>
+              <VolumeVisualizer
+                steps={12}
+                gradientRange={[1.6, 0.92]}
+                className="h-5 w-full"
+                stepClassName="bg-gray-200"
+                analyserNode={mediaStreamData.analyserNode}
+              />
+            </div>
+          </div>
+        </div>
 
         <div className="max-w-2xl mx-auto border-2 border-gray-300 px-2 sm:px-6 pt-4 rounded-lg bg-white">
           <div className="flex mb-4 items-center">
@@ -56,66 +102,60 @@ export default function InterviewPage() {
             style={{ marginBottom: "-4px" }}
           >
             <div className="pt-0 pb-0 px-1 gap-1 flex flex-row border-2 border-b-0 bg-blue-50 border-gray-300 rounded-t-lg">
-              <div className="w-1/6">
-                <p className="-mt-10 mb-2 h-8 flex justify-center text-center items-end leading-none text-xs text-gray-500 tracking-widest font-medium title-font uppercase">
-                  Excluir
-                </p>
-                <button className="py-6 w-full cursor-pointer focus:outline-none flex justify-center items-center rounded-b-lg border-b-2 border-x-2 border-gray-300 text-gray-600 bg-white hover:bg-gray-50 hover:text-gray-700">
-                  <span className="text-xl md:text-3xl">
-                    <PiTrashFill />
-                  </span>
-                </button>
-              </div>
-              <div className="w-1/6">
-                <p className="-mt-10 mb-2 h-8 flex justify-center text-center items-end leading-none text-xs text-gray-500 tracking-widest font-medium title-font uppercase">
-                  Gravar
-                </p>
-                <button className="py-6 w-full cursor-pointer focus:outline-none flex justify-center items-center rounded-b-lg border-b-2 border-x-2 border-gray-300 text-gray-600 bg-white hover:bg-gray-50 hover:text-gray-700">
-                  <span className="text-xl md:text-3xl">
-                    <PiRecordFill />
-                  </span>
-                </button>
-              </div>
-              <div className="w-1/6">
-                <p className="-mt-10 mb-2 h-8 flex justify-center text-center items-end leading-none text-xs text-gray-500 tracking-widest font-medium title-font uppercase">
-                  Play
-                </p>
-                <button className="py-6 w-full cursor-pointer focus:outline-none flex justify-center items-center rounded-b-lg border-b-2 border-x-2 border-gray-300 text-gray-600 bg-white hover:bg-gray-50 hover:text-gray-700">
-                  <span className="text-xl md:text-3xl">
-                    <PiPlayFill />
-                  </span>
-                </button>
-              </div>
-              <div className="w-1/6">
-                <p className="-mt-10 mb-2 h-8 flex justify-center text-center items-end leading-none text-xs text-gray-500 tracking-widest font-medium title-font uppercase">
-                  Pause
-                </p>
-                <button className="py-6 w-full cursor-pointer focus:outline-none flex justify-center items-center rounded-b-lg border-b-2 border-x-2 border-gray-300 text-gray-600 bg-white hover:bg-gray-50 hover:text-gray-700">
-                  <span className="text-xl md:text-3xl">
-                    <PiPauseFill />
-                  </span>
-                </button>
-              </div>
-              <div className="w-1/6">
-                <p className="-mt-10 mb-2 h-8 flex justify-center text-center items-end leading-none text-xs text-gray-500 tracking-widest font-medium title-font uppercase">
-                  Encerrar
-                </p>
-                <button className="py-6 w-full cursor-pointer focus:outline-none flex justify-center items-center rounded-b-lg border-b-2 border-x-2 border-gray-300 text-gray-600 bg-white hover:bg-gray-50 hover:text-gray-700">
-                  <span className="text-xl md:text-3xl">
-                    <PiStopFill />
-                  </span>
-                </button>
-              </div>
-              <div className="w-1/6">
-                <p className="-mt-10 mb-2 h-8 flex justify-center text-center items-end leading-none text-xs text-gray-500 tracking-widest font-medium title-font uppercase">
-                  Salvar & Enviar
-                </p>
-                <button className="py-6 w-full cursor-pointer focus:outline-none flex justify-center items-center rounded-b-lg border-b-2 border-x-2 border-gray-300 text-gray-600 bg-white hover:bg-gray-50 hover:text-gray-700">
-                  <span className="text-xl md:text-3xl">
-                    <PiFloppyDiskBackFill />
-                  </span>
-                </button>
-              </div>
+              <RecorderButton
+                label="Excluir"
+                disabled={!hasAnswerRecorded}
+                icon={<PiTrashFill />}
+                onClick={() => {
+                  setHasAnswerRecorded(false);
+                  setIsPlaying(true);
+                }}
+              />
+              <RecorderButton
+                label="Gravar"
+                color="pink"
+                active={isRecording}
+                disabled={isRecording || hasAnswerRecorded}
+                icon={<PiRecordFill className="text-pink-800" />}
+                onClick={() => {
+                  setIsRecording(true);
+                  setIsPlaying(true);
+                }}
+              />
+              <RecorderButton
+                label="Play"
+                active={isPlaying}
+                disabled={isPlaying || (!hasAnswerRecorded && !isRecording)}
+                icon={<PiPlayFill />}
+                onClick={() => {
+                  setIsPlaying(true);
+                }}
+              />
+              <RecorderButton
+                label="Pause"
+                active={!isPlaying && (hasAnswerRecorded || isRecording)}
+                disabled={!isPlaying}
+                icon={<PiPauseFill />}
+                onClick={() => {
+                  setIsPlaying(false);
+                }}
+              />
+              <RecorderButton
+                label="Encerrar"
+                disabled={!isRecording}
+                icon={<PiStopFill />}
+                onClick={() => {
+                  setIsPlaying(false);
+                  setIsRecording(false);
+                  setHasAnswerRecorded(true);
+                }}
+              />
+              <RecorderButton
+                label="Salvar & Enviar"
+                disabled={!hasAnswerRecorded}
+                icon={<PiFloppyDiskBackFill />}
+                onClick={() => {}}
+              />
             </div>
           </div>
         </div>
