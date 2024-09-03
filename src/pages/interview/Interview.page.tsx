@@ -14,9 +14,14 @@ import { ReactNode, useState } from "react";
 import useAudioMediaServices from "@/components/audio-media-services/useAudioMediaServices";
 import VolumeVisualizer from "@/components/audio-visualizers/VolumeVisualizer";
 import NibolAudioPlayer from "@/components/audio-visualizers/NibolAudioPlayer";
+import dayjs from "dayjs";
+import scale from "@/utils/scale";
+
+const formatTimer = (ms: number) => dayjs.duration(ms).format("mm:ss");
 
 export default function InterviewPage() {
   const { interviewId } = useParams();
+  const maxAnswerTimeMs = 180000;
 
   const audsvc = useAudioMediaServices();
   window["audsvc"] = audsvc;
@@ -36,13 +41,17 @@ export default function InterviewPage() {
     availableSpkrs,
     selectedSpk,
     setSelectedSpk,
-    
+
     digitalRecorder,
   } = audsvc;
 
   const [isPlaying, setIsPlaying] = useState(false);
   const [isRecording, setIsRecording] = useState(false);
   const [hasAnswerRecorded, setHasAnswerRecorded] = useState(false);
+
+  const currTime = Math.round(digitalRecorder.recordedTime);
+  const remainingTime = maxAnswerTimeMs - currTime;
+  const timerPositionScale = scale([0, maxAnswerTimeMs], [0, 100]);
 
   return (
     <>
@@ -77,7 +86,7 @@ export default function InterviewPage() {
               <span className="font-bold">05</span>
             </p>
             <span className="text-md inline-block font-mono px-2 ml-auto border border-pink-800 bg-pink-200 text-pink-800 rounded-lg">
-              03:00
+              {formatTimer(maxAnswerTimeMs)}
             </span>
           </div>
           <h2 className="text-xl text-gray-900 font-medium title-font mb-4">
@@ -90,7 +99,7 @@ export default function InterviewPage() {
               00:00&nbsp;
             </div>
             <div className="inline-block text-md font-mono text-pink-800">
-              -01:13
+              -{formatTimer(remainingTime)}
             </div>
           </div>
 
@@ -98,9 +107,16 @@ export default function InterviewPage() {
             <NibolAudioPlayer />
           </div>
 
-          <div className="flex justify-center align-center py-1 gap-4">
-            <div className="inline-block text-md font-mono px-3 border border-blue-800 bg-blue-200 text-blue-800 rounded-lg mx-auto">
-              01:47
+          <div className="relative py-1" style={{ width: "calc(100% - 70px)", left: "35px" }}>
+            <div
+              className="relative inline-block text-md font-mono px-3 border border-blue-800 bg-blue-200 text-blue-800 rounded-lg mx-auto"
+              style={{
+                width: "70px",
+                transform: "translateX(-50%)",
+                left: `${timerPositionScale(currTime)}%`,
+              }}
+            >
+              {formatTimer(currTime)}
             </div>
           </div>
 
@@ -144,7 +160,7 @@ export default function InterviewPage() {
                       setIsPlaying(true);
                     }
                   }
-                  
+
                   if (digitalRecorder.state === "inactive") {
                     // setIsPlaying(true);
                   }
@@ -162,7 +178,7 @@ export default function InterviewPage() {
                       setIsPlaying(false);
                     }
                   }
-                  
+
                   if (digitalRecorder.state === "inactive") {
                     // setIsPlaying(false);
                   }
