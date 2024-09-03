@@ -3,6 +3,7 @@ import useMediaStreamSource from "./useMediaStreamSource";
 import { IFormSelectOption } from "../form/FormSelect";
 import useMediaDevices from "./useMediaDevices";
 import useNavigatorPermissions from "../navigator-permissions/useNavigatorPermissions";
+import useMediaRecorder from "./useMediaRecorder";
 
 export default function useAudioMediaServices() {
   const permMicrophone = useNavigatorPermissions("microphone"); // audio-capture, speaker-selection
@@ -130,6 +131,8 @@ export default function useAudioMediaServices() {
     playback: isMicPlayback,
   });
 
+  const digitalRecorder = useMediaRecorder({ mediaStream: mediaStreamData.mediaStream })
+
   return {
     permMicrophone,
     mediaStreamData,
@@ -146,5 +149,7 @@ export default function useAudioMediaServices() {
     availableSpkrs,
     selectedSpk,
     setSelectedSpk,
+    
+    digitalRecorder,
   };
 }

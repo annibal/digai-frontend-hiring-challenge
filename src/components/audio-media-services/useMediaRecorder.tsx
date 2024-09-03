@@ -1,7 +1,8 @@
-import { useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
+import useDurationTracker from "../duration-tracker/useDurationTracker";
 
 export interface IUseMediaRecorderProps {
-  stream;
+  mediaStream?: MediaStream;
 }
 
 export function downloadBlob(blob: Blob) {
@@ -13,55 +14,187 @@ export function downloadBlob(blob: Blob) {
   document.body.removeChild(downloadLink);
 }
 
-export default function useMediaRecorder({ stream }: IUseMediaRecorderProps) {
-  let recordingChunks: Blob[] = [];
-  const [mediaRecorder, setMediaRecorder] = useState<MediaRecorder | null>(
-    null
-  );
+export default function useMediaRecorder({
+  mediaStream,
+}: IUseMediaRecorderProps) {
+  const dataChunksRef = useRef<Blob[]>([]);
+  const mediaRecorderRef = useRef<MediaRecorder>(null);
+  const twoFactorStart = useRef<boolean>(false);
+  const durationTracker = useDurationTracker({
+    updateInterval: 60,
+    autoStart: false,
+  });
 
-  const mimeType = MediaRecorder.isTypeSupported("audio/mpeg")
-    ? "audio/mpeg"
-    : MediaRecorder.isTypeSupported("audio/webm")
-      ? "audio/webm"
-      : "audio/wav";
+  const mimeType = useMemo(() => {
+    return MediaRecorder.isTypeSupported("audio/mpeg")
+      ? "audio/mpeg"
+      : MediaRecorder.isTypeSupported("audio/webm")
+        ? "audio/webm"
+        : "audio/wav";
+  }, []);
 
-  const options = { mimeType };
+  const handleRecorderDataChunk = (event: BlobEvent) => {
+    console.log("Data Chunk Event", event.data);
+    if (event.data?.size && event.data?.size > 0) {
+      const dataChunk = event.data;
+      dataChunksRef.current.push(dataChunk);
+      // const recording = new Blob(dataChunksRef.current, { mimeType });
+    }
+  };
+
+  const handleRecorderStop = (evt) => {
+    console.info("INFO: ", evt, mediaRecorderRef.current);
+    durationTracker.pause();
+  };
+  const handleRecorderStart = (evt) => {
+    if (mediaRecorderRef.current.state === "inactive") {
+      console.info("INFO: MediaRecorder didn't started");
+
+      if (twoFactorStart.current) {
+        console.info("INFO: twoFactorStart", {
+          evt,
+          recorder: mediaRecorderRef.current,
+        });
+        twoFactorStart.current = false;
+        throw new DOMException("MediaRecorder did not started on second attempt, aborting", "InvalidStateError");
+      }
+      twoFactorStart.current = true;
+
+      setTimeout(() => {
+        try {
+          mediaRecorderRef.current.start();
+        } catch (e) {
+          console.info("INFO: MediaRecorder broke when attempting two-factor start", {
+            evt,
+            recorder: mediaRecorderRef.current,
+          });
+          console.error(e);
+        }
+      }, 500);
+      return;
+    }
+    
+    if (twoFactorStart.current) {
+      console.info("INFO: Two Factor start did manage to make MediaRecorder start working.")
+      twoFactorStart.current = false;
+    }
+
+    console.info("INFO: ", evt, mediaRecorderRef.current);
+    durationTracker.reset();
+    dataChunksRef.current = [];
+  };
+  const handleRecorderPause = (evt) => {
+    console.info("INFO: ", evt, mediaRecorderRef.current);
+    durationTracker.pause();
+  };
+  const handleRecorderResume = (evt) => {
+    console.info("INFO: ", evt, mediaRecorderRef.current);
+    durationTracker.play();
+  };
 
   function createMediaRecorder() {
-    const newMediaRecorder = new MediaRecorder(stream, options);
-    recordingChunks = [];
-    
-    newMediaRecorder.ondataavailable = (e) => {
-      recordingChunks.push(e.data);
-    };
+    if (!mediaStream) return;
 
-    newMediaRecorder.onstop = () => {
-      // const recordBlob = new Blob(recordingChunks, {
-      //   type: mimeType,
-      // });
-      // downloadBlob(recordBlob);
-      
-      recordingChunks = [];
-    };
-    
-    setMediaRecorder(newMediaRecorder);
+    const newMediaRecorder = new MediaRecorder(mediaStream, { mimeType });
+
+    newMediaRecorder.addEventListener("dataavailable", handleRecorderDataChunk);
+    newMediaRecorder.addEventListener("stop", handleRecorderStop);
+    newMediaRecorder.addEventListener("start", handleRecorderStart);
+    newMediaRecorder.addEventListener("pause", handleRecorderPause);
+    newMediaRecorder.addEventListener("resume", handleRecorderResume);
+    newMediaRecorder.onerror = function bolota(e) { console.log(e)}
+
+    // newMediaRecorder.stop
+    // newMediaRecorder.start
+    // newMediaRecorder.pause
+    // newMediaRecorder.resume
+    // newMediaRecorder.state
+
+    mediaRecorderRef.current = newMediaRecorder;
     return newMediaRecorder;
   }
 
-  function stopRecording() {
-    mediaRecorder.onstop = () => {
-      // setCurrentRecord({
-      //   ...currentRecord,
-      //   file: window.URL.createObjectURL(recordBlob),
-      // });
-      recordingChunks = [];
-    };
+  const getRecordingFile = () => {
+    const recordingObj = new Blob(dataChunksRef.current, { type: mimeType });
+    return recordingObj;
 
-    mediaRecorder.stop();
+    // const audioURL = window.URL.createObjectURL(recordingObj);
+    // const audio = document.createElement("audio");
+    // audio.setAttribute("controls", "");
+    // audio.src = audioURL;
+    // ----
+    // const reader = new FileReader();
+    // reader.onloadend = e => {
+    //   this.src = e.target.result;
+    //   if(!this.nativeFileSystemSupported) {
+    //     this.saveAudioLink.download = `capture.${this.mimeType.ext}`;
+    //     this.saveAudioLink.href = e.target.result;
+    //   }
+    // };
+    // reader.readAsDataURL(recordingObj);
+  };
 
-    // setIsRecording(false);
-    // setIsRecordingFinished(true);
-    // setTimer(0);
-    // clearTimeout(timerTimeout);
+  const getAudioObjectURL = () => {
+    const recordingObj = getRecordingFile();
+    const audioURL = window.URL.createObjectURL(recordingObj);
+    return audioURL;
+  };
+
+  useEffect(() => {
+    createMediaRecorder();
+  }, [mediaStream]);
+
+  const safelyChangeState = (fnName) => async (...args) => {
+    const tryToCallFunc = () => {
+      if (typeof mediaRecorderRef.current?.[fnName] !== "function") {
+        return { success: false };
+      } else {
+        try {
+          const retVal = mediaRecorderRef.current?.[fnName](...args);
+          return { success: true, data: retVal }
+        } catch (e) {
+          console.info(`INFO: Error when tried to call 'recorder.${fnName}()'`)
+          console.error(e)
+        }
+      }
+      return { success: false };
+    }
+
+    const funcResult1 = await tryToCallFunc();
+    if (funcResult1?.success) {
+      console.info(`INFO: tryToCallFunc 'recorder.${fnName}()' success`, funcResult1.data);
+      console.log(mediaRecorderRef.current)
+      return funcResult1;
+    }
+
+    console.warn(`Can't call 'recorder.${fnName}()' yet.`, mediaRecorderRef.current);
+    
+    const r = await new Promise((resol) => {
+      setTimeout(() => {
+        const funcResult2 = tryToCallFunc();
+        if (funcResult2.success) {
+          return resol(funcResult2);
+        }
+        
+        console.error(`Failed to call 'recorder.${fnName}()' on the second attempt - the referece is invalid`)
+        console.info('INFO: > mediaRecorderRef :>> ', mediaRecorderRef);
+        console.info('INFO: > mediaRecorderRef.current :>> ', mediaRecorderRef.current);
+        console.info('INFO: > typeof mediaRecorderRef.current :>> ', typeof mediaRecorderRef.current);
+        resol(false)
+      }, 300);
+    })
+    return r;
   }
+
+  return {
+    mediaRecorder: mediaRecorderRef.current,
+    state: mediaRecorderRef.current?.state || "inactive",
+    stop: safelyChangeState("stop"),
+    start: safelyChangeState("start"),
+    pause: safelyChangeState("pause"),
+    resume: safelyChangeState("resume"),
+    recordedTime: durationTracker.duration,
+    getRecordingFile,
+    getAudioObjectURL,
+  };
 }

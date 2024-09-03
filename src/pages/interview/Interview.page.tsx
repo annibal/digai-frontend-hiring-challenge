@@ -13,10 +13,13 @@ import RecorderButton from "./RecorderButton";
 import { ReactNode, useState } from "react";
 import useAudioMediaServices from "@/components/audio-media-services/useAudioMediaServices";
 import VolumeVisualizer from "@/components/audio-visualizers/VolumeVisualizer";
+import NibolAudioPlayer from "@/components/audio-visualizers/NibolAudioPlayer";
 
 export default function InterviewPage() {
   const { interviewId } = useParams();
 
+  const audsvc = useAudioMediaServices();
+  window["audsvc"] = audsvc;
   const {
     permMicrophone,
     mediaStreamData,
@@ -33,7 +36,9 @@ export default function InterviewPage() {
     availableSpkrs,
     selectedSpk,
     setSelectedSpk,
-  } = useAudioMediaServices();
+    
+    digitalRecorder,
+  } = audsvc;
 
   const [isPlaying, setIsPlaying] = useState(false);
   const [isRecording, setIsRecording] = useState(false);
@@ -89,7 +94,9 @@ export default function InterviewPage() {
             </div>
           </div>
 
-          <div className="border border-gray-700 p-6 rounded-lg"></div>
+          <div className="border border-gray-700 p-6 rounded-lg flex gap-1">
+            <NibolAudioPlayer />
+          </div>
 
           <div className="flex justify-center align-center py-1 gap-4">
             <div className="inline-block text-md font-mono px-3 border border-blue-800 bg-blue-200 text-blue-800 rounded-lg mx-auto">
@@ -108,7 +115,7 @@ export default function InterviewPage() {
                 icon={<PiTrashFill />}
                 onClick={() => {
                   setHasAnswerRecorded(false);
-                  setIsPlaying(true);
+                  setIsPlaying(false);
                 }}
               />
               <RecorderButton
@@ -117,9 +124,12 @@ export default function InterviewPage() {
                 active={isRecording}
                 disabled={isRecording || hasAnswerRecorded}
                 icon={<PiRecordFill className="text-pink-800" />}
-                onClick={() => {
-                  setIsRecording(true);
-                  setIsPlaying(true);
+                onClick={async () => {
+                  const isSuccess = await digitalRecorder.start();
+                  if (isSuccess) {
+                    setIsRecording(true);
+                    setIsPlaying(true);
+                  }
                 }}
               />
               <RecorderButton
@@ -127,8 +137,17 @@ export default function InterviewPage() {
                 active={isPlaying}
                 disabled={isPlaying || (!hasAnswerRecorded && !isRecording)}
                 icon={<PiPlayFill />}
-                onClick={() => {
-                  setIsPlaying(true);
+                onClick={async () => {
+                  if (digitalRecorder.state === "paused") {
+                    const isSuccess = await digitalRecorder.resume();
+                    if (isSuccess) {
+                      setIsPlaying(true);
+                    }
+                  }
+                  
+                  if (digitalRecorder.state === "inactive") {
+                    // setIsPlaying(true);
+                  }
                 }}
               />
               <RecorderButton
@@ -136,18 +155,30 @@ export default function InterviewPage() {
                 active={!isPlaying && (hasAnswerRecorded || isRecording)}
                 disabled={!isPlaying}
                 icon={<PiPauseFill />}
-                onClick={() => {
-                  setIsPlaying(false);
+                onClick={async () => {
+                  if (digitalRecorder.state === "recording") {
+                    const isSuccess = await digitalRecorder.pause();
+                    if (isSuccess) {
+                      setIsPlaying(false);
+                    }
+                  }
+                  
+                  if (digitalRecorder.state === "inactive") {
+                    // setIsPlaying(false);
+                  }
                 }}
               />
               <RecorderButton
                 label="Encerrar"
                 disabled={!isRecording}
                 icon={<PiStopFill />}
-                onClick={() => {
-                  setIsPlaying(false);
-                  setIsRecording(false);
-                  setHasAnswerRecorded(true);
+                onClick={async () => {
+                  const isSuccess = await digitalRecorder.stop();
+                  if (isSuccess) {
+                    setIsPlaying(false);
+                    setIsRecording(false);
+                    setHasAnswerRecorded(true);
+                  }
                 }}
               />
               <RecorderButton

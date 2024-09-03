@@ -1,6 +1,8 @@
-import { ButtonHTMLAttributes, ReactNode } from "react";
+import { ButtonHTMLAttributes, ReactNode, useState } from "react";
 import { twMerge } from "tailwind-merge";
 import "./RecorderButton.css";
+import { PiSpinnerGapFill } from "react-icons/pi";
+
 
 export interface IRecorderButtonProps
   extends ButtonHTMLAttributes<HTMLButtonElement> {
@@ -16,8 +18,17 @@ export default function RecorderButton({
   active,
   disabled,
   color = "indigo",
+  onClick,
   ...restProps
 }: IRecorderButtonProps) {
+  const [isLoading, setIsLoading] = useState(false)
+
+  const handleClick = async (e) => {
+    setIsLoading(true);
+    await onClick(e);
+    setIsLoading(false);
+  }
+
   return (
     <div
       className={twMerge("recorder-button w-1/6", disabled && !active && "opacity-60")}
@@ -60,6 +71,7 @@ export default function RecorderButton({
           transformOrigin: "top center",
           ...(active ? { transform: "rotateX(-30deg)" } : {}),
         }}
+        onClick={handleClick}
       >
         <span
           className={twMerge(
@@ -67,7 +79,7 @@ export default function RecorderButton({
             disabled && !active && "opacity-50",
           )}
         >
-          {icon}
+          {isLoading ? <PiSpinnerGapFill className="animate-spin text-purple-600"/> : icon}
         </span>
       </button>
     </div>
