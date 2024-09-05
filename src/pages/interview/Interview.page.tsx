@@ -23,6 +23,7 @@ import { useStoreContext } from "@/providers/StoreProvider";
 import { twMerge } from "tailwind-merge";
 import { Question } from "@/providers/interview.provider";
 import blobToFileURL from "@/utils/blobToFileURL";
+import { getIndexFormatter } from "@/utils/formatIndex";
 
 const formatTimer = (ms: number) => dayjs.duration(ms).format("mm:ss");
 
@@ -128,10 +129,15 @@ export default function InterviewPage() {
     setPlayerTime(0);
   }, [questionId]);
 
-  const fmtQuestionIndex = (idx: number) =>
-    idx
-      .toString()
-      .padStart(Math.max(2, questions.length.toString().length), "0") || "??";
+  useEffect(() => {
+    if (currTime > maxAnswerTimeMs) {
+      digitalRecorder.stop();
+      setIsPlaying(false);
+    }
+  }, [currTime, maxAnswerTimeMs])
+
+  const listIndexFormatter = getIndexFormatter(questions)
+  
   return (
     <>
       <section className="flex items-center flex-col">
@@ -201,11 +207,11 @@ export default function InterviewPage() {
                     : "text-indigo-500"
                 )}
               >
-                {fmtQuestionIndex(currentQuestionIdx + 1)}
+                {listIndexFormatter(currentQuestionIdx + 1)}
               </span>{" "}
               de{" "}
               <span className="font-bold">
-                {fmtQuestionIndex(questions.length)}
+                {listIndexFormatter(questions.length)}
               </span>
             </p>
             <span className="text-md inline-block font-mono px-2 ml-auto border border-pink-800 bg-pink-200 text-pink-800 rounded-lg">
