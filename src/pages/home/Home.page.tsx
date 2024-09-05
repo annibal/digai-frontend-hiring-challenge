@@ -22,19 +22,19 @@ export default function HomePage() {
           </p>
           <div className="flex justify-center">
             <Link
-              to={`/interview-setup/${uuidv4()}`}
+              to={`/interview-setup/1234ABCD`}
               className="inline-flex text-white bg-indigo-500 border-0 py-2 px-6 focus:outline-none hover:bg-indigo-600 rounded text-lg"
             >
               Página: Preparação
             </Link>
             <Link
-              to={`/interview/${uuidv4()}`}
+              to={`/interview/1234ABCD`}
               className="ml-4 inline-flex bg-gray-200 border-0 py-2 px-6 focus:outline-none hover:bg-gray-300 rounded text-lg"
             >
               Página: Entrevista
             </Link>
             <Link
-              to={`/interview-after/${uuidv4()}`}
+              to={`/interview-after/1234ABCD`}
               className="ml-4 inline-flex bg-gray-200 border-0 py-2 px-6 focus:outline-none hover:bg-gray-300 rounded text-lg"
             >
               Página: Resultado

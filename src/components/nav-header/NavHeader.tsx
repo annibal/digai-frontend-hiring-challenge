@@ -21,16 +21,16 @@ export default function NavHeader() {
 
           <nav className="md:ml-auto gap-8 flex flex-wrap h-12 items-center text-base justify-center">
             <Link
-              to={`/interview-setup/${uuidv4()}`}
+              to={`/interview-setup/1234ABCD`}
               className="hover:text-gray-900"
             >
               Preparação
             </Link>
-            <Link to={`/interview/${uuidv4()}`} className="hover:text-gray-900">
+            <Link to={`/interview/1234ABCD`} className="hover:text-gray-900">
               Entrevista
             </Link>
             <Link
-              to={`/interview-after/${uuidv4()}`}
+              to={`/interview-after/1234ABCD`}
               className="hover:text-gray-900"
             >
               Respostas

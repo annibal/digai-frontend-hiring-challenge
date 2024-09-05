@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import useDurationTracker from "../duration-tracker/useDurationTracker";
+import blobToFileURL from "@/utils/blobToFileURL";
 
 export interface IUseMediaRecorderProps {
   mediaStream?: MediaStream;
@@ -20,6 +21,7 @@ export default function useMediaRecorder({
   const dataChunksRef = useRef<Blob[]>([]);
   const mediaRecorderRef = useRef<MediaRecorder>(null);
   const twoFactorStart = useRef<boolean>(false);
+  const [recordingFileUrl, setRecordingFileUrl] = useState("");
   const durationTracker = useDurationTracker({
     updateInterval: 60,
     autoStart: false,
@@ -34,11 +36,15 @@ export default function useMediaRecorder({
   }, []);
 
   const handleRecorderDataChunk = (event: BlobEvent) => {
-    console.log("Data Chunk Event", event.data);
+    console.info("Data Chunk Event", event.data);
     if (event.data?.size && event.data?.size > 0) {
       const dataChunk = event.data;
       dataChunksRef.current.push(dataChunk);
       // const recording = new Blob(dataChunksRef.current, { mimeType });
+    }
+
+    if (mediaRecorderRef.current.state === "inactive") {
+      processRecordingFile();
     }
   };
 
@@ -56,7 +62,10 @@ export default function useMediaRecorder({
           recorder: mediaRecorderRef.current,
         });
         twoFactorStart.current = false;
-        throw new DOMException("MediaRecorder did not started on second attempt, aborting", "InvalidStateError");
+        throw new DOMException(
+          "MediaRecorder did not started on second attempt, aborting",
+          "InvalidStateError"
+        );
       }
       twoFactorStart.current = true;
 
@@ -64,23 +73,29 @@ export default function useMediaRecorder({
         try {
           mediaRecorderRef.current.start();
         } catch (e) {
-          console.info("INFO: MediaRecorder broke when attempting two-factor start", {
-            evt,
-            recorder: mediaRecorderRef.current,
-          });
+          console.info(
+            "INFO: MediaRecorder broke when attempting two-factor start",
+            {
+              evt,
+              recorder: mediaRecorderRef.current,
+            }
+          );
           console.error(e);
         }
       }, 500);
       return;
     }
-    
+
     if (twoFactorStart.current) {
-      console.info("INFO: Two Factor start did manage to make MediaRecorder start working.")
+      console.info(
+        "INFO: Two Factor start did manage to make MediaRecorder start working."
+      );
       twoFactorStart.current = false;
     }
 
     console.info("INFO: ", evt, mediaRecorderRef.current);
     durationTracker.reset();
+    durationTracker.play();
     dataChunksRef.current = [];
   };
   const handleRecorderPause = (evt) => {
@@ -102,7 +117,6 @@ export default function useMediaRecorder({
     newMediaRecorder.addEventListener("start", handleRecorderStart);
     newMediaRecorder.addEventListener("pause", handleRecorderPause);
     newMediaRecorder.addEventListener("resume", handleRecorderResume);
-    newMediaRecorder.onerror = function bolota(e) { console.log(e)}
 
     // newMediaRecorder.stop
     // newMediaRecorder.start
@@ -114,87 +128,94 @@ export default function useMediaRecorder({
     return newMediaRecorder;
   }
 
-  const getRecordingFile = () => {
+  const processRecordingFile = async () => {
     const recordingObj = new Blob(dataChunksRef.current, { type: mimeType });
-    return recordingObj;
-
-    // const audioURL = window.URL.createObjectURL(recordingObj);
-    // const audio = document.createElement("audio");
-    // audio.setAttribute("controls", "");
-    // audio.src = audioURL;
-    // ----
-    // const reader = new FileReader();
-    // reader.onloadend = e => {
-    //   this.src = e.target.result;
-    //   if(!this.nativeFileSystemSupported) {
-    //     this.saveAudioLink.download = `capture.${this.mimeType.ext}`;
-    //     this.saveAudioLink.href = e.target.result;
-    //   }
-    // };
-    // reader.readAsDataURL(recordingObj);
-  };
-
-  const getAudioObjectURL = () => {
-    const recordingObj = getRecordingFile();
-    const audioURL = window.URL.createObjectURL(recordingObj);
-    return audioURL;
+    console.info("recordingObj :>> ", recordingObj);
+    const fileSrc = await blobToFileURL(recordingObj);
+    setRecordingFileUrl(fileSrc);
   };
 
   useEffect(() => {
     createMediaRecorder();
   }, [mediaStream]);
 
-  const safelyChangeState = (fnName) => async (...args) => {
-    const tryToCallFunc = () => {
-      if (typeof mediaRecorderRef.current?.[fnName] !== "function") {
+  const safelyChangeState =
+    (fnName) =>
+    async (...args) => {
+      const tryToCallFunc = () => {
+        if (typeof mediaRecorderRef.current?.[fnName] !== "function") {
+          return { success: false };
+        } else {
+          try {
+            const retVal = mediaRecorderRef.current?.[fnName](...args);
+            return { success: true, data: retVal };
+          } catch (e) {
+            console.info(
+              `INFO: Error when tried to call 'recorder.${fnName}()'`
+            );
+            console.error(e);
+          }
+        }
         return { success: false };
-      } else {
-        try {
-          const retVal = mediaRecorderRef.current?.[fnName](...args);
-          return { success: true, data: retVal }
-        } catch (e) {
-          console.info(`INFO: Error when tried to call 'recorder.${fnName}()'`)
-          console.error(e)
-        }
+      };
+
+      const funcResult1 = await tryToCallFunc();
+      if (funcResult1?.success) {
+        console.info(
+          `INFO: tryToCallFunc 'recorder.${fnName}()' success`,
+          funcResult1.data
+        );
+        return funcResult1;
       }
-      return { success: false };
-    }
 
-    const funcResult1 = await tryToCallFunc();
-    if (funcResult1?.success) {
-      console.info(`INFO: tryToCallFunc 'recorder.${fnName}()' success`, funcResult1.data);
-      console.log(mediaRecorderRef.current)
-      return funcResult1;
-    }
+      console.warn(
+        `Can't call 'recorder.${fnName}()' yet.`,
+        mediaRecorderRef.current
+      );
 
-    console.warn(`Can't call 'recorder.${fnName}()' yet.`, mediaRecorderRef.current);
-    
-    const r = await new Promise((resol) => {
-      setTimeout(() => {
-        const funcResult2 = tryToCallFunc();
-        if (funcResult2.success) {
-          return resol(funcResult2);
-        }
-        
-        console.error(`Failed to call 'recorder.${fnName}()' on the second attempt - the referece is invalid`)
-        console.info('INFO: > mediaRecorderRef :>> ', mediaRecorderRef);
-        console.info('INFO: > mediaRecorderRef.current :>> ', mediaRecorderRef.current);
-        console.info('INFO: > typeof mediaRecorderRef.current :>> ', typeof mediaRecorderRef.current);
-        resol(false)
-      }, 300);
-    })
-    return r;
-  }
+      const r = await new Promise((resol) => {
+        setTimeout(() => {
+          const funcResult2 = tryToCallFunc();
+          if (funcResult2.success) {
+            return resol(funcResult2);
+          }
+
+          console.error(
+            `Failed to call 'recorder.${fnName}()' on the second attempt - the referece is invalid`
+          );
+          console.info("INFO: > mediaRecorderRef :>> ", mediaRecorderRef);
+          console.info(
+            "INFO: > mediaRecorderRef.current :>> ",
+            mediaRecorderRef.current
+          );
+          console.info(
+            "INFO: > typeof mediaRecorderRef.current :>> ",
+            typeof mediaRecorderRef.current
+          );
+          resol(false);
+        }, 300);
+      });
+      return r;
+    };
+
+  const reset = () => {
+    // durationTracker.reset();
+    dataChunksRef.current = [];
+    setRecordingFileUrl("");
+  };
 
   return {
     mediaRecorder: mediaRecorderRef.current,
     state: mediaRecorderRef.current?.state || "inactive",
     stop: safelyChangeState("stop"),
-    start: safelyChangeState("start"),
+    start: async () => safelyChangeState("start")(250),
     pause: safelyChangeState("pause"),
     resume: safelyChangeState("resume"),
+    reset,
     recordedTime: durationTracker.duration,
-    getRecordingFile,
-    getAudioObjectURL,
+    processRecordingFile,
+    recordingFileUrl,
+    recordingDataChunks: dataChunksRef.current,
+    mimeType,
   };
 }

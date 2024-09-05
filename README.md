@@ -24,7 +24,7 @@ Desafio para entrar na Digaí: Criar uma interface com a pergunta, gravação e 
   * [x] Layout
   * [x] Vestibulum
   * [x] Interview
-    * [ ] Audio Recorder
+    * [x] Audio Recorder
     * [ ] Audio Player
   * [x] Submission
   * [X] Home page
@@ -58,9 +58,9 @@ Desafio para entrar na Digaí: Criar uma interface com a pergunta, gravação e 
     * [ ] Display the question
       * [ ] ↖️ mock data source
       * [ ] ↖️ next question(s) state management
-    * [ ] Start Recording answer component - Record / Pause / Continue / Stop (Finish)
-    * [ ] Audio component - Play / Pause / Set
-    * [ ] option to delete recording, to then record a new one
+    * [x] Start Recording answer component - Record / Pause / Continue / Stop (Finish)
+    * [x] Audio component - Play / Pause / Set
+    * [x] option to delete recording, to then record a new one
     * [ ] submit interview
     * [ ] stop recording on time limit
   * [ ] ↖️ Interview: all questions page
@@ -130,29 +130,11 @@ export default tseslint.config({
 
 ---
 
+notes
+
 ```javascript
 
-function gotStream(stream) {  
-  rec = new MediaRecorder(stream);
-  rec.ondataavailable = e => {
-    audioChunks.push(e.data);
-    if (rec.state == "inactive"){
-      let blob = new Blob(audioChunks,{type:'audio/x-mpeg-3'});
-      recordedAudio.src = URL.createObjectURL(blob);
-      recordedAudio.controls=true;
-      recordedAudio.autoplay=true;
-      audioDownload.href = recordedAudio.src;
-      audioDownload.download = 'mp3';
-      audioDownload.innerHTML = 'download';
-    }
-  }
-}
-
-// stop:
-stream.getAudioTracks()[0].stop();
-
-
-full example:
+example:
 https://github.com/Anurag-Kochar-1/Shadcn-UI-Audio-Recorder-With-Visualizer/blob/master/components/audio-recorder-with-visualizer.tsx
 
 waveshaper:

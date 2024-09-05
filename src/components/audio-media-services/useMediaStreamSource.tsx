@@ -112,7 +112,7 @@ export default function useMediaStreamSource({
       if (audioDest) {
         ctxOpts["sinkId"] = audioDest;
       }
-      const newAudioCtx = new AudioContext(ctxOpts);
+      const newAudioCtx = new (AudioContext || window["webkitAudioContext"])(ctxOpts);
       setAudioCtx(newAudioCtx);
       console.debug("setAudioCtx:", newAudioCtx);
       audioCtxRef.current = newAudioCtx;

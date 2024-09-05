@@ -37,7 +37,7 @@ export default function InterviewVestibulumPage() {
   } = useAudioMediaServices();
 
   return (
-    <>
+    <div className="w-full max-w-2xl mx-auto">
       <h1 className="mb-8 title-font text-3xl font-medium text-gray-900 max-w-2xl xl:max-w-none mx-auto">
         Preparação para a Entrevista
       </h1>
@@ -205,6 +205,6 @@ export default function InterviewVestibulumPage() {
           />
         </div> */}
       </section>
-    </>
+    </div>
   );
 }

@@ -21,7 +21,7 @@ const routes = [
         ),
       },
       {
-        path: "interview/:interviewId",
+        path: "interview/:interviewId/:questionId?",
         lazy: lz(() => import("./pages/interview/Interview.page")),
       },
       {

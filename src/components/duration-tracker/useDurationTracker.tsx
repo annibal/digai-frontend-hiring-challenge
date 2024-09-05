@@ -27,6 +27,7 @@ export default function useDurationTracker({
   };
 
   const pause = () => {
+    console.debug(`duration tracker : pause`);
     if (isTrackingRef.current) {
       updateDuration();
       isTrackingRef.current = false
@@ -34,6 +35,7 @@ export default function useDurationTracker({
   }
   
   const play = () => {
+    console.debug(`duration tracker : play`);
     if (!isTrackingRef.current) {
       lastTime.current = lastTimePlayed.current = performance.now();
       isTrackingRef.current = true;
@@ -42,9 +44,10 @@ export default function useDurationTracker({
   }
 
   const reset = () => {
+    console.debug(`duration tracker : reset`);
     const trackedDuration = duration;
     lastTime.current = lastTimePlayed.current = performance.now();
-    isTrackingRef.current = true;
+    isTrackingRef.current = false;
     setDuration(0);
     return trackedDuration;
   }
