@@ -16,7 +16,9 @@ export default function NavHeader() {
               className="logo h-16 mr-6 rounded-full"
               alt="Digai logo"
             />
-            <span className="text-xl leading-none">Annibal Challenge</span>
+            <span className="text-xl leading-none">
+              <s>Annibal Challenge</s> POC of a Chart
+            </span>
           </Link>
 
           <nav className="md:ml-auto gap-8 flex flex-wrap h-12 items-center text-base justify-center">

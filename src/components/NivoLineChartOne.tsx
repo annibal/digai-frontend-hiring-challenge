@@ -1,5 +1,4 @@
-// install (please try to align the version of installed @nivo packages)
-// yarn add @nivo/line
+import { randomElement, randomRange } from "@/utils/random";
 import { ResponsiveLine } from "@nivo/line";
 
 export type LineChartData = Array<{
@@ -17,17 +16,25 @@ export interface NivoLineChartOne {
   width?: number | string;
 }
 
-export default function NivoLineChartOne({
-  data,
-  height,
-  width,
-}: NivoLineChartOne) {
+export default function NivoLineChartOne({ data, height, width }: NivoLineChartOne) {
+  console.log("chartData", JSON.parse(JSON.stringify(data)));
+  const bins = (data[0]?.data || []).length;
+
+  const tickVals = Math.floor(bins / 12);
+
   return (
     <div className="nivo-line-chart-one" style={{ width, height }}>
       <ResponsiveLine
         data={data}
-        margin={{ top: 50, right: 100, bottom: 50, left: 60 }}
-        xScale={{ type: "point" }}
+        margin={{ top: 45, right: 25, bottom: 50, left: 40 }}
+        xScale={{
+          type: "time",
+          // format: "%Y-%m-%d",
+          format: "%Y-%m-%dT%H:%M:%S.%LZ",
+          useUTC: false,
+          precision: "minute",
+        }}
+        xFormat="time:%d %b %Y - %H:%M:%S"
         yScale={{
           type: "linear",
           min: "auto",
@@ -35,29 +42,33 @@ export default function NivoLineChartOne({
           stacked: true,
           reverse: false,
         }}
-        yFormat=" >-.2f"
+        yFormat=" >-.0f"
+        curve="natural"
         axisTop={null}
         axisRight={null}
         axisBottom={{
-            tickSize: 5,
-            tickPadding: 5,
-            tickRotation: -45,
-            legend: 'transportation',
-            legendOffset: 44,
-            legendPosition: 'middle',
-            truncateTickAt: 0
+          tickSize: 5,
+          tickPadding: 10,
+          tickRotation: 0,
+          legend: "",
+          legendOffset: 44,
+          legendPosition: "start",
+          // truncateTickAt: 200,
+
+          format: "%b %d",
+          tickValues: `every ${tickVals} days`,
         }}
         axisLeft={{
           tickSize: 5,
-          tickPadding: 5,
+          tickPadding: 10,
           tickRotation: 0,
-          legend: "count",
+          legend: "",
           legendOffset: -40,
           legendPosition: "middle",
           truncateTickAt: 0,
         }}
         colors={{
-          datum: 'color'
+          datum: "color",
         }}
         enablePoints={false}
         pointSize={10}
@@ -70,22 +81,25 @@ export default function NivoLineChartOne({
         areaOpacity={1}
         isInteractive={true}
         enableTouchCrosshair={true}
+        crosshairType="cross"
         useMesh={true}
+        enableSlices="x"
         legends={[
           {
-            anchor: "bottom-right",
-            direction: "column",
+            anchor: "top",
+            direction: "row",
             justify: false,
-            translateX: 100,
-            translateY: 0,
-            itemsSpacing: 0,
+            translateX: 0,
+            translateY: -40,
+            itemsSpacing: 12,
             itemDirection: "left-to-right",
             itemWidth: 80,
             itemHeight: 20,
-            itemOpacity: 0.75,
-            symbolSize: 12,
+            itemOpacity: 1,
+            symbolSize: 16,
             symbolShape: "circle",
-            symbolBorderColor: "rgba(0, 0, 0, .5)",
+            toggleSerie: true,
+            symbolBorderColor: "rgba(0, 0, 0, 0.8)",
             effects: [
               {
                 on: "hover",
@@ -97,86 +111,148 @@ export default function NivoLineChartOne({
             ],
           },
         ]}
+        sliceTooltip={({ slice }) => {
+          console.log(slice);
+          return (
+            <div
+              style={{
+                background: "rgba(255,255,255,0.9)",
+                padding: "6px 12px 8px",
+                border: "1px solid #CACACA",
+                borderRadius: "8px"
+              }}
+            >
+              <strong >
+                {slice.points[0]?.data.xFormatted}
+              </strong>
+
+              <div style={{ borderTop: "1px solid #CACACA", marginTop: "6px", padding: "2px 16px 0" }}>
+                {slice.points.map((point, idx) => (
+                  <p
+                    key={point.id}
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      padding: "0 16px",
+                      gap: "0.5em",
+                      borderTop: idx > 0 ? "1px solid #CACACA" : "",
+                      height: "28px",
+                    }}
+                  >
+                    <span
+                      style={{
+                        lineHeight: "1",
+                        display: "inline-block",
+                        flex: "0 1 auto",
+                        textAlign: "left",
+                        paddingBottom: "3px",
+                        fontWeight: 500,
+                        fontSize: "0.9rem",
+                        marginInlineEnd: "auto",
+                      }}
+                    >
+                      {point.serieId}:
+                    </span>
+
+                    <span
+                      style={{
+                        lineHeight: "1",
+                        display: "inline-block",
+                        fontFamily: "monospace",
+                        flex: "1 1 auto",
+                        textAlign: "right",
+                        // maxWidth: "40px",
+                        fontWeight: 600,
+                        fontSize: "1rem",
+                        marginInlineStart: "8px",
+                      }}
+                    >
+                      {point.data.yFormatted}
+                    </span>
+                    <div
+                      style={{
+                        width: "16px",
+                        height: "16px",
+                        backgroundColor: point.serieColor,
+                        border: "1px solid #3c3c3c",
+                        borderRadius: "50%",
+                      }}
+                    />
+                  </p>
+                ))}
+              </div>
+            </div>
+          );
+        }}
       />
     </div>
   );
 }
 
-function randomElement(list) {
-  return list[Math.floor((Math.random()*list.length))];
-}
-function randomRange(min, max, decimal?) {
-  decimal = (decimal == null || decimal < 0) ? Math.pow(10,0) : Math.pow(10,decimal);
-  min = (min == null ? 0 : min) * decimal;
-  max = (max == null ? 100 : max) * decimal;
-  return Math.floor((Math.random() * (max - min)) + min) / decimal
-}
-function emojiStatus({isProcessed, isFinalMessageSent}) {
+function emojiStatus({ isProcessed, isFinalMessageSent }) {
   if (!isProcessed) {
-    return "⌛:❌, 🏁:➖"
+    return "⌛:❌, 🏁:➖";
   }
 
   return `⌛:✅, 🏁:${isFinalMessageSent ? "✅" : "❌"}`;
 }
 function emojiMsgCount(cycle, { sentMsgs, recvMsgs, lastMsg, lastRecvMsg }) {
-  const str = [
-    `👆🏻: ${sentMsgs}`,
-    `👇: ${recvMsgs}`,
-    `🕘: ${cycle - lastMsg}`,
-    `🕘👇: ${cycle - lastRecvMsg}`
-  ].join(', ')
+  const str = [`👆🏻: ${sentMsgs}`, `👇: ${recvMsgs}`, `🕘: ${cycle - lastMsg}`, `🕘👇: ${cycle - lastRecvMsg}`].join(", ");
 
-  return `✉️[${str}]`
+  return `✉️[${str}]`;
 }
 
 const makeLogEvt = (logEvent) => {
-  return logEvent.map(x => {
-    if (!x) return;
-    if (typeof x === "string") return x;
+  return logEvent
+    .map((x) => {
+      if (!x) return;
+      if (typeof x === "string") return x;
 
-    try {
-      const entries = Object.entries(x);
-      return entries.map(([k,v]) => `${k}:'${v}'`).join(', ');
-    } catch (er) {
-      //
-    }
-    
-    try {
-      return `${x}`
-    } catch (err) {
-      //
-    }
-  }).filter(Boolean).join(", ");
-}
+      try {
+        const entries = Object.entries(x);
+        return entries.map(([k, v]) => `${k}:'${v}'`).join(", ");
+      } catch (er) {
+        //
+      }
+
+      try {
+        return `${x}`;
+      } catch (err) {
+        //
+      }
+    })
+    .filter(Boolean)
+    .join(", ");
+};
 
 export const genMockLineChartData = ({ targets, dates, maxMsgs, bumpMsgAfter, maxVacuo }) => {
   const logs = [];
-  
-  function logStuff(...args: any[]) {
-    console.log(args);
-    const logEvtContent = makeLogEvt(args)
-    logs.push(logEvtContent);
-    console.debug('-: ' + logEvtContent);
-  }
-  
 
-  logStuff({ targets, dates, maxMsgs, bumpMsgAfter, maxVacuo })
+  function logStuff(...args: any[]) {
+    console.debug(args);
+    const logEvtContent = makeLogEvt(args);
+    logs.push(logEvtContent);
+    console.debug("-: " + logEvtContent);
+  }
+
+  logStuff({ targets, dates, maxMsgs, bumpMsgAfter, maxVacuo });
 
   const stateTree: any = {
-    "queued": // { /*    */ color: "#78CFCA", nextStates: { "running": 70, "halted": 2, "failed": 5 } },
-              { /*    */ color: "#78CFCA", nextStates: { "running": 99, "failed": 1 } },
-    "paused": { /*    */ color: "#454545", nextStates: { "queued": 50, "paused": 20, "halted": 30 } },
-    "running": // { /*   */ color: "#E58A00", nextStates: { "paused": 6, "halted": 2, "running": 70, "failed": 1 } }, // { "processed": 70 } },
-               { /*   */ color: "#E58A00", nextStates: { "paused": 1, "running": 99 } }, // { "processed": 70 } },
-    "halted": { /*    */ color: "#5D0000", nextStates: null },
-    "failed": { /*    */ color: "#A40000", nextStates: null },
-    "processed": { /* */ color: "#009612", nextStates: null }, // { "accepted": 1, "refused": 1, "postponed": 1 } },
-    "accepted": { /*  */ color: "#111C9D", nextStates: null },
-    "refused": { /*   */ color: "#9747FF", nextStates: null },
-    "postponed": { /* */ color: "#4D9AD5", nextStates: null },
-  }
-  
-  Object.keys(stateTree).forEach(key => {
+    // { /*    */ color: "#78CFCA", nextStates: { "running": 70, "halted": 2, "failed": 5 } },
+    queued: { /*    */ color: "#78CFCA", nextStates: { running: 99, failed: 1 } },
+    paused: { /*    */ color: "#454545", nextStates: { queued: 50, paused: 20, halted: 30 } },
+    // { /*   */ color: "#E58A00", nextStates: { "paused": 6, "halted": 2, "running": 70, "failed": 1 } }, // { "processed": 70 } },
+    running: { /*   */ color: "#E58A00", nextStates: { paused: 1, running: 99 } }, // { "processed": 70 } },
+    halted: { /*    */ color: "#5D0000", nextStates: null },
+    failed: { /*    */ color: "#A40000", nextStates: null },
+    // processed: { /* */ color: "#009612", nextStates: null }, // { "accepted": 1, "refused": 1, "postponed": 1 } },
+    accepted: { /*  */ color: "#111C9D", nextStates: null },
+    refused: { /*   */ color: "#9747FF", nextStates: null },
+    postponed: { /* */ color: "#4D9AD5", nextStates: null },
+  };
+
+  Object.keys(stateTree).forEach((key) => {
     stateTree[key].summaryData = dates.map((date) => ({ x: date, y: 0 }));
     stateTree[key].normNextStates = [];
 
@@ -185,16 +261,15 @@ export const genMockLineChartData = ({ targets, dates, maxMsgs, bumpMsgAfter, ma
 
     let arr = [];
     Object.entries(nextStates).forEach(([s, w]) => {
-      arr = [...arr, ...(`${s},`.repeat(+w).slice(0, -1).split(','))];
-    })
+      arr = [...arr, ...`${s},`.repeat(+w).slice(0, -1).split(",")];
+    });
 
     stateTree[key].normNextStates = arr;
-  })
+  });
 
-  logStuff({ stateTree: JSON.stringify(stateTree, null, 2)})
+  logStuff({ stateTree: JSON.stringify(stateTree, null, 2) });
 
-
-  const negotiations = targets.map(t => ({
+  const negotiations = targets.map((t) => ({
     name: t,
     state: "queued",
     lastMsg: 0,
@@ -204,10 +279,10 @@ export const genMockLineChartData = ({ targets, dates, maxMsgs, bumpMsgAfter, ma
     // acceptChance:    randomRange(5, 10),
     // postponeChance:  randomRange(3, 7),
     // minMsgsToDecide: randomRange(1, 7),
-    replyChance:     3,
-    decideChance:    7,
-    acceptChance:    5,
-    postponeChance:  8,
+    replyChance: 3,
+    decideChance: 7,
+    acceptChance: 5,
+    postponeChance: 8,
     minMsgsToDecide: 3,
     isProcessed: false,
     isFinalMessageSent: false,
@@ -217,21 +292,26 @@ export const genMockLineChartData = ({ targets, dates, maxMsgs, bumpMsgAfter, ma
   }));
 
   const makeDaySummary = (cycle) => {
-    const logObj = { states: {}, negotiations: {} }
+    const logObj = { states: {}, negotiations: {} };
 
-    Object.keys(stateTree).forEach(key => {
+    Object.keys(stateTree).forEach((key) => {
       logObj.states[key] = 0;
-      
-      negotiations.forEach(neg => {
+
+      negotiations.forEach((neg) => {
         logObj.negotiations[neg.name] = {
-          status: [
-            `${neg.state}`,
-            emojiStatus(neg),
-            emojiMsgCount(cycle, neg),
-          ].join(', '),
+          status: [`${neg.state}`, emojiStatus(neg), emojiMsgCount(cycle, neg)].join(", "),
+          statusObj: {
+            status: neg.state,
+            isProcessed: neg.isProcessed,
+            isFinalMessageSent: neg.isFinalMessageSent,
+            sentMsgs: neg.sentMsgs,
+            recvMsgs: neg.recvMsgs,
+            lastMsg: neg.lastMsg,
+            lastRecvMsg: neg.lastRecvMsg,
+          },
           messages: neg.messages.slice(),
         };
-        
+
         if (neg.state === key) {
           stateTree[key].summaryData[cycle].y += 1;
 
@@ -240,69 +320,67 @@ export const genMockLineChartData = ({ targets, dates, maxMsgs, bumpMsgAfter, ma
       });
     });
 
-    console.log('Day Summary', logObj);
+    console.debug("Day Summary", logObj);
     return logObj;
-  }
-  
+  };
+
   dates.forEach((date, cycle) => {
     let msgsSent = 0;
     const logObj = { cycle, date, events: [], summary: {} };
-    
+
     for (let nIdx = 0; nIdx < negotiations.length; nIdx++) {
       const neg = negotiations[nIdx];
       const logEvtBase: any = [{ cycle }, { nIdx }, { target: neg.name }, { state: `${neg.state}, ${emojiStatus(neg)}` }];
-      
+
       const logAnEvent = (parts) => {
-        const logEvtContent = makeLogEvt([ ...logEvtBase, ...parts])
+        const logEvtContent = makeLogEvt([...logEvtBase, ...parts]);
         logObj.events.push(logEvtContent);
-        console.log('>: ' + logEvtContent);
-      }
+        console.debug(">: " + logEvtContent);
+      };
       const canSendMsg = () => msgsSent <= maxMsgs;
 
       const sendMsg = (dir, type) => {
         if (dir == "recv") {
-          neg.messages.push({ dir, type, date, cycle })
+          neg.messages.push({ dir, type, date, cycle });
           neg.recvMsgs += 1;
           neg.lastMsg = cycle;
           neg.lastRecvMsg = cycle;
-          
+
           logAnEvent([{ message: `✉️👇: ${type}` }]);
           return true;
         }
 
         if (dir == "sent") {
           if (canSendMsg()) {
-            neg.messages.push({ dir, type, date, cycle })
+            neg.messages.push({ dir, type, date, cycle });
             neg.sentMsgs += 1;
             neg.lastMsg = cycle;
             msgsSent += 1;
 
-            logAnEvent([`Sent message ${msgsSent} of ${maxMsgs} max daily msgs`, { message: `✉️👆🏻: ${type}` } ]);
+            logAnEvent([`Sent message ${msgsSent} of ${maxMsgs} max daily msgs`, { message: `✉️👆🏻: ${type}` }]);
             return true;
           } else {
-
-            logAnEvent(["Failed to 👆🏻 send ✉️ message", { msgsSent, maxMsgs}, { message: type } ]);
-            return false
+            logAnEvent(["Failed to 👆🏻 send ✉️ message", { msgsSent, maxMsgs }, { message: type }]);
+            return false;
           }
         }
 
         if (dir == "syst") {
-          neg.messages.push({ dir, type, date, cycle })
+          neg.messages.push({ dir, type, date, cycle });
           return true;
         }
 
-        logAnEvent([{ "⚠️ unknown message dir": dir }, { message: type } ]);
+        logAnEvent([{ "⚠️ unknown message dir": dir }, { message: type }]);
         return false;
-      }
+      };
       const changeState = (nxtState?) => {
-        const nextState = (nxtState === undefined) ? randomElement(stateTree[neg.state].normNextStates) : nxtState;
-        if(nextState !== neg.state){
+        const nextState = nxtState === undefined ? randomElement(stateTree[neg.state].normNextStates) : nxtState;
+        if (nextState !== neg.state) {
           logAnEvent([{ nextState }]);
-          sendMsg("syst", `Changed state from "${neg.state}" to "${nextState}"`)
+          sendMsg("syst", `Changed state from "${neg.state}" to "${nextState}"`);
         }
-        neg.state = nextState
-      }
-
+        neg.state = nextState;
+      };
 
       if (neg.state == "paused") {
         // chance of someone un-pausing it
@@ -316,8 +394,6 @@ export const genMockLineChartData = ({ targets, dates, maxMsgs, bumpMsgAfter, ma
 
       // ok we can handle this one
 
-      
-      
       if (neg.state == "queued" && canSendMsg()) {
         changeState();
 
@@ -329,19 +405,19 @@ export const genMockLineChartData = ({ targets, dates, maxMsgs, bumpMsgAfter, ma
 
       // chance to Pause, Halt, or Fail here
       if (neg.state == "running") {
-        changeState()
+        changeState();
       }
       // check if it survived - its still running
       if (neg.state == "running") {
         if (randomRange(0, 10) > neg.replyChance) {
           // target replied
-          logAnEvent(['target will Reply']);
+          logAnEvent(["target will Reply"]);
 
           const canDecide = neg.recvMsgs >= neg.minMsgsToDecide;
 
           if (canDecide && randomRange(0, 10) > neg.decideChance) {
             neg.isProcessed = true;
-            logAnEvent(['target will Decide']);
+            logAnEvent(["target will Decide"]);
 
             if (randomRange(0, 10) > neg.postponeChance) {
               sendMsg("recv", "I do not want to decide right now.");
@@ -358,39 +434,42 @@ export const genMockLineChartData = ({ targets, dates, maxMsgs, bumpMsgAfter, ma
                 changeState("refused");
               }
             }
-            
-            
           } else {
-            sendMsg("recv", randomElement([
-              "What is this",
-              "I don't know you",
-              "I cannot pay",
-              "Give me more information",
-              "Who gave you my number",
-              "Basic human response",
-              "Silly human response",
-              "Generic human response"
-            ]));
+            sendMsg(
+              "recv",
+              randomElement([
+                "What is this",
+                "I don't know you",
+                "I cannot pay",
+                "Give me more information",
+                "Who gave you my number",
+                "Basic human response",
+                "Silly human response",
+                "Generic human response",
+              ]),
+            );
 
-            sendMsg("sent", randomElement([
-              "Respectful reply to enhance friendship with target",
-              "Descriptive text with lots of information to decrease doubt",
-              "Tactical phrase to evoke an agreement decision",
-              "Insightful response with a better payment plan"
-            ]))
+            sendMsg(
+              "sent",
+              randomElement([
+                "Respectful reply to enhance friendship with target",
+                "Descriptive text with lots of information to decrease doubt",
+                "Tactical phrase to evoke an agreement decision",
+                "Insightful response with a better payment plan",
+              ]),
+            );
 
             if (randomRange(0, 10) > 7) {
-              sendMsg("recv", "Useless message that only counts toward the operator's daily message limit")
-              sendMsg("sent", "Intelligently structured response, as usual")
+              sendMsg("recv", "Useless message that only counts toward the operator's daily message limit");
+              sendMsg("sent", "Intelligently structured response, as usual");
             }
           }
-
         } else {
           // ignored
 
           if (cycle - neg.lastRecvMsg >= maxVacuo) {
             logEvtBase.push(emojiMsgCount(cycle, neg));
-            changeState("failed")
+            changeState("failed");
             continue;
           }
           if (cycle - neg.lastMsg >= bumpMsgAfter) {
@@ -406,7 +485,7 @@ export const genMockLineChartData = ({ targets, dates, maxMsgs, bumpMsgAfter, ma
       //   } else {
       //   }
       // }
-      
+
       if (!neg.isFinalMessageSent) {
         let didSend = false;
 
@@ -429,13 +508,13 @@ export const genMockLineChartData = ({ targets, dates, maxMsgs, bumpMsgAfter, ma
 
     logObj.summary = makeDaySummary(cycle);
 
-    console.log("stateTree", stateTree)
+    console.debug("stateTree", stateTree);
     const sep = `${"-".repeat(32)}\n>>: End of ${cycle}° cycle\n${"-".repeat(32)}`;
-    console.log(sep)
+    console.debug(sep);
     logObj.events.push(sep);
 
     logs.push(logObj);
-  })
+  });
 
   const lineChartData = Object.entries(stateTree).map(([key, val]) => ({
     id: key,
@@ -443,15 +522,13 @@ export const genMockLineChartData = ({ targets, dates, maxMsgs, bumpMsgAfter, ma
     data: (val as any).summaryData.slice(),
   }));
 
-
   const r = {
     lineChartData,
     logs,
-  }
-  console.log('Line Chart Data : final result ->', r);
+  };
+  console.log("Line Chart Data : final result ->", r);
   return r;
-
-}
+};
 
 export const mockLineChartData1: LineChartData = [
   {
